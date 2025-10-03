@@ -20,4 +20,6 @@ void print_st_data(st_t* st);
 void print_st_info(st_t* st);
 void print_st_values(st_t* st);
 
+#define CHECK_STACK(ST) if (!st_verify(st)) return verification_error
+
 #endif

@@ -1,6 +1,7 @@
 // TODO: test stack!!!
 // TODO: check float types
 // TODO: check verifier for reliability
+// TODO: add canary protection outside array
 
 
 // TODO: print_el

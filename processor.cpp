@@ -10,6 +10,9 @@
 #include "stack/font_styles.h"
 #include "stack/stack_dump.h"
 
+// make printf macros for debug
+// stack information and program info in debug file if mode is not debug
+
 void execute_cmd(st_t* st, int* code, int* ip, calc_commands cmd);
 st_t initialise_stack(size_t capacity);
 
@@ -23,7 +26,7 @@ void calc_out(st_t* st);
 void calc_hlt(st_t* st);
 
 
-//TODO: split output streams
+//TODO: split output streams ???
 //TODO: normal push input
 
 int main()
@@ -33,11 +36,12 @@ int main()
     size_t capacity = 10;
     st_t st = initialise_stack(capacity);
 
-    FILE* fp = fopen("program.out", "r");
+    FILE* fp = fopen("program.out", "r"); // add ability to determine file
 
-    int code[50] = {};
+    int code[50] = {}; // refactor
     int cmd = 0;
     int i = 0;
+    size_t prg_size = 0;
     int scanned = 0;
 
     while (true)
@@ -49,32 +53,36 @@ int main()
         if (scanned == -1)
             break;
 
+        prg_size++;
         code[i] = cmd;
-
         i++;
     }
-
 
     int ip = 0;
     calc_commands current_cmd = UNKNOWN;
 
-    while ((current_cmd = (calc_commands) code[ip]) != HLT)
+    for (size_t i = 0; i < prg_size; i++)
     {
+        current_cmd = (calc_commands) code[ip];
         printf("current_cmd = %d\n", current_cmd);
 
         execute_cmd(&st, code, &ip, current_cmd);
 
-        getchar();
+        if (current_cmd == HLT)
+        {
+            fclose(fp);
+            printf("main: shutting down calculator \n");
+            return 0;
+        }
+
+        getchar(); // optionally
 
         ip++;
     }
 
-    printf("main: shutting down calculator\n");
+    printf("process terminated manually, no HLT got\n");
+    fclose(fp);
     return 0;
-
-
-    // printf("process terminated manually, no HLT got\n");
-    // return 0;
 }
 
 
@@ -144,8 +152,6 @@ void calc_push(st_t* st, int* code, int* ip)
     printf("execute_cmd: began push\n");
     int number = code[++*ip];
 
-    // add number check
-
     st_return_err pushed = st_push(st, number);
 
     if (pushed == no_error)
@@ -166,7 +172,7 @@ void calc_add(st_t* st)
 
     int a = 0;
     int b = 0;
-    st_return_err got_a = st_pop(st, &a); // assert?
+    st_return_err got_a = st_pop(st, &a);
     st_return_err got_b = st_pop(st, &b);
     int res = a + b;
 

@@ -6,6 +6,11 @@
 #include "stack/font_styles.h"
 #include "calculator_cmd.h"
 
+// add spell check
+// refactor raw_cmd
+// add debug messages in other stream using printf
+// debug output in console program output in file
+
 calc_commands determine_cmd(char* cmd);
 err_t read_number_asm(int* number);
 void clear_buffer(void);
@@ -24,10 +29,7 @@ int main()
         calc_commands cmd = determine_cmd(raw_cmd);
 
         if (cmd == HLT)
-        {
-            //printf("main: shutting down calculator\n");
             return 0;
-        }
 
         scanned = scanf("%s", raw_cmd);
     }

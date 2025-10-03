@@ -25,7 +25,4 @@ enum err_t
     wrong_cmd,
 };
 
-// err_t read_number(int* number);
-// void clear_buffer(void);
-
 #endif

@@ -4,16 +4,16 @@ FLAGS = -g0 -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Wc++14-compa
 
 
 
-DEPS = calculator_cmd.h stack/stack.h stack/stack_dump.h stack/stack_properties.h stack/font_styles.h stack/min_max.h stack/stack_err_messages.h
+DEPS = calculator_cmd.h stack/stack.h stack/stack_dump.h stack/stack_properties.h stack/font_styles.h stack/min_max.h
 
-OBJ = processor.o stack/stack.o stack/stack_dump.o stack/min_max.o 
+OBJ = processor.o stack/stack.o stack/stack_dump.o stack/min_max.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(FLAGS)
 
-main: $(OBJ)
+processor: $(OBJ)
 	$(CC) -o $@ $^ $(FLAGS)
 
 clean:
-	rm -rf *.o main
-	rm -rf stack/*.o main
+	rm -rf *.o processor
+	rm -rf stack/*.o processor
