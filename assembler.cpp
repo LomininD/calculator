@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,121 +7,235 @@
 #include "stack/font_styles.h"
 #include "processor_properties.h"
 
-// add spell check
-// if no hlt
-// refactor raw_cmd
-// fix push input
-// add debug messages in other stream using printf
-// debug output in console program output in file
+// solve problem with unexpected symbols
+// add output to program.out
+// add file paths
+// debug messages in console (in debug mode) - user can redirect them to file
+// debug messages to log file (always)
+// errors and introductory information in console (always)
 
-proc_commands determine_cmd(char* cmd);
-err_t read_number_asm(int* number);
-void clear_buffer(void);
+
+err_t determine_cmd(const char* file_name, int current_line, char* raw_cmd, proc_commands* cmd, char* str);
+err_t read_arg(const char* file_name, int current_line, int* number, char* str);
+char* readline(char* str, size_t* len, int* end);
 
 int main()
 {
-    //printf(MAKE_BOLD("+++ ASSEMBLER +++\n"));
+    printf(MAKE_BOLD("+++ ASSEMBLER +++\n\n"));
+    printf("version: %d\n", version);
+    printf("designed by LMD (c) \n\n");
 
-    char raw_cmd[10] = ""; // bad solution
-    int scanned = scanf("%s", raw_cmd);
+    printf("assembler: began assembly\n\n");
 
-    while (scanned != -1)
+    int current_line = 0;
+    const char* file_name = "program.asm";
+
+    size_t len = 50;
+    char* str = (char*) calloc(len + 1, sizeof(char));
+    char raw_cmd[32] = {};
+    proc_commands cmd = UNKNOWN;
+    int end = 0;
+
+    int got_hlt = 0;
+    int got_out = 0;
+    int got_something = 0;
+
+    while (!end)
     {
-        clear_buffer();
+        current_line++;
+        str = readline(str, &len, &end);
 
-        proc_commands cmd = determine_cmd(raw_cmd);
+        if (end)
+            break;
+
+        got_something = 1;
+        printf("assembler: got str: %s\n", str);
+        int scanned = sscanf(str, "%31s", raw_cmd);
+
+        if (scanned == -1)
+        {
+            printf("\n");
+            continue;
+        }
+
+        printf("assembler: got instruction: %s\n", raw_cmd);
+        err_t recognized = determine_cmd(file_name, current_line, raw_cmd, &cmd, str);
+
+        if (recognized != ok)
+        {
+            printf("\n");
+            printf("assembler: " MAKE_BOLD_RED("aborting due to error\n"));
+            return 0;
+        }
+
+        printf("\n");
 
         if (cmd == HLT)
-            return 0;
+        {
+            got_hlt = 1;
+            break;
+        }
 
-        scanned = scanf("%s", raw_cmd);
+        if (cmd == OUT)
+            got_out = 1;
+        else
+            got_out = 0;
     }
+
+    free(str);
+
+    if (got_something)
+    {
+        if (!got_out)
+        {
+            printf("assembler: %s:%d: " MAKE_BOLD("WARNING:") " calculations seem to have no effect\n", file_name, current_line);
+            printf(MAKE_GREY("Note: you may forgot OUT instruction in your code\n\n"));
+        }
+
+        if (!got_hlt)
+            printf("assembler: %s:%d: " MAKE_BOLD("WARNING:") " no HLT instruction in the end of the program\n\n", file_name, current_line);
+    }
+    else
+    {
+        printf("assembler: " MAKE_BOLD("WARNING:") " got blank file\n\n");
+    }
+
+    printf("assembler: finished assembly\n");
     return 0;
 }
 
 
-err_t read_number_asm(int* number)
+err_t read_arg(const char* file_name, int current_line, int* number, char* str)
 {
     assert(number != NULL);
+    assert(str != NULL);
 
-    int success = scanf("%d", number);
-
-    //printf("%d\n", *number);
+    int success = sscanf(str, "%*s %d", number);
 
     if (success == 1)
     {
+        printf("read_arg: recognised arg %d\n", *number);
         printf("%d\n", *number);
         return ok;
     }
     else
     {
-        printf("read_number: failed to get number\n");
-        clear_buffer();
+        printf("\n");
+        printf("read_arg: %s:%d: " MAKE_BOLD_RED("ERROR:") " failed to get arg\n", file_name, current_line);
         return wrong_number;
     }
 }
 
 
-proc_commands determine_cmd(char* cmd)
+err_t determine_cmd(const char* file_name, int current_line, char* raw_cmd, proc_commands* cmd, char* str)
 {
+    assert(raw_cmd != NULL);
     assert(cmd != NULL);
+    assert(str != NULL);
 
-    if (strcmp("PUSH", cmd) == 0)
+    if (strcmp("PUSH", raw_cmd) == 0)
     {
-        printf("%d\n", PUSH);
+        printf("determine_cmd: recognized push\n");
 
         int number = 0;
-        read_number_asm(&number);
+        err_t is_read = read_arg(file_name, current_line, &number, str);
 
-        return PUSH;
+        if (is_read != ok)
+            return error;
+
+        printf("%d\n", PUSH);
+        *cmd = PUSH;
+
+        return ok;
     }
-    else if (strcmp("ADD", cmd) == 0)
+    else if (strcmp("ADD", raw_cmd) == 0)
     {
+        printf("determine_cmd: recognized add\n");
         printf("%d\n", ADD);
-        return ADD;
+        *cmd = ADD;
+
+        return ok;
     }
-    else if (strcmp("SUB", cmd) == 0)
+    else if (strcmp("SUB", raw_cmd) == 0)
     {
+        printf("determine_cmd: recognized sub\n");
         printf("%d\n", SUB);
-        return SUB;
+        *cmd = SUB;
+        return ok;
     }
-    else if (strcmp("DIV", cmd) == 0)
+    else if (strcmp("DIV", raw_cmd) == 0)
     {
+        printf("determine_cmd: recognized div\n");
         printf("%d\n", DIV);
-        return DIV;
+        *cmd = DIV;
+        return ok;
     }
-    else if (strcmp("MULT", cmd) == 0)
+    else if (strcmp("MULT", raw_cmd) == 0)
     {
+        printf("determine_cmd: recognized mult\n");
         printf("%d\n", MULT);
-        return MULT;
+        *cmd = MULT;
+        return ok;
     }
-    else if (strcmp("SQRT", cmd) == 0)
+    else if (strcmp("SQRT", raw_cmd) == 0)
     {
+        printf("determine_cmd: recognized sqrt\n");
         printf("%d\n", SQRT);
-        return SQRT;
+        *cmd = SQRT;
+        return ok;
     }
-    else if (strcmp("OUT", cmd) == 0)
+    else if (strcmp("OUT", raw_cmd) == 0)
     {
+        printf("determine_cmd: recognized out\n");
         printf("%d\n", OUT);
-        return OUT;
+        *cmd = OUT;
+        return ok;
     }
-    else if (strcmp("HLT", cmd) == 0)
+    else if (strcmp("HLT", raw_cmd) == 0)
     {
+        printf("determine_cmd: recognized hlt\n");
         printf("%d\n", HLT);
-        return HLT;
+        *cmd = HLT;
+        return ok;
     }
 
-    printf("determine_cmd: unknown command\n");
-    return UNKNOWN;
+    printf("\n");
+    printf("determine_cmd: %s:%d: " MAKE_BOLD_RED("ERROR:") " invalid command (%s)\n", file_name, current_line, raw_cmd);
+    *cmd = UNKNOWN;
+    return error;
 }
 
 
-void clear_buffer(void)
+char* readline(char* str, size_t* len, int* end)
 {
-    int c = '\0';
-    while ((c = getchar()) != '\n' && c != EOF);
+    size_t symbol_ind = 0;
+    char c = 0;
+
+    while (true)
+    {
+        c = getchar();
+
+        if (c == '\n' || c == '\r' || c == EOF)
+        {
+            if (c == EOF)
+                *end = 1;
+            break;
+        }
+
+        if (c == ';')
+            *(str + symbol_ind) = '\0';
+        else
+            *(str + symbol_ind) = toupper(c);
+
+        symbol_ind++;
+
+        if (symbol_ind == *len)
+        {
+            *len *= 2;
+            str = (char*) realloc(str, (*len + 1) * sizeof(char));
+        }
+    }
+
+    *(str + symbol_ind) = '\0';
+    return str;
 }
-
-
-
-

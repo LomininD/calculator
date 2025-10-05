@@ -4,6 +4,7 @@
 #include "stack/stack.h"
 #include "stack/stack_dump.h"
 
+const int version = 1;
 
 enum proc_commands
 {

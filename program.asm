@@ -1,17 +1,16 @@
-PUSH
--2
-PUSH
--2
+PUSH -2     ; pushes -2 in stack
+PUSH -2
 MULT
-PUSH
-4
-DIV
-PUSH
-1
+PUSH 4
+DIV         ; just a stupid comment
+PUSH 1
 ADD
-PUSH
--24
+PUSH -24
+
+; another stupid comment straight in the middle of the program
+
 SUB
 SQRT
+
 OUT
 HLT
