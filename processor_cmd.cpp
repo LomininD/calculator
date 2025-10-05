@@ -19,7 +19,7 @@ err_t proc_push(st_t* st, int* code, size_t* ip)
     }
     else
     {
-        printf("execute_cmd: push failed\n");
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " push failed\n");
         return error;
     }
 }
@@ -64,7 +64,7 @@ err_t proc_calc(st_t* st, proc_commands cmd)
 
             if (a == 0)
             {
-                printf("execute_cmd: div failed - division by zero\n");
+                printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " div failed - division by zero\n");
                 return error;
             }
 
@@ -76,7 +76,7 @@ err_t proc_calc(st_t* st, proc_commands cmd)
 
             if (a < 0)
             {
-                printf("execute_cmd: sqrt failed - cannot determine root of negative number\n");
+                printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " sqrt failed - cannot determine root of negative number\n");
                 return error;
             }
 
@@ -94,13 +94,13 @@ err_t proc_calc(st_t* st, proc_commands cmd)
         }
         else
         {
-            printf("execute_cmd: %s failed (failed to push the result)\n", cmd_name);
+            printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (failed to push the result)\n", cmd_name);
             return error;
         }
     }
     else
     {
-        printf("execute_cmd: %s failed (not enough data in stack)\n", cmd_name);
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (not enough data in stack)\n", cmd_name);
         return error;
     }
 }
@@ -148,7 +148,7 @@ err_t proc_out(st_t* st)
     }
     else
     {
-        printf("execute_cmd: out failed (not enough data in stack)\n");
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " out failed (not enough data in stack)\n");
         return error;
     }
 }
@@ -169,7 +169,7 @@ err_t proc_hlt(st_t* st)
     }
     else
     {
-        printf("execute_cmd: hlt failed\n");
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " hlt failed\n");
         return error;
     }
 }

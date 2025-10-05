@@ -13,7 +13,7 @@
 // make printf macros for debug
 // stack information and program info in debug file if mode is not debug
 
-void execute_cmd(st_t* st, int* code, size_t* ip, proc_commands cmd);
+err_t execute_cmd(st_t* st, int* code, size_t* ip, proc_commands cmd);
 err_t initialise_stack(size_t capacity, st_t* st);
 
 
@@ -55,7 +55,6 @@ int main()
         code[i] = cmd;
         i++;
     }
-
     //printf("prg_size: %zu\n", prg_size);
 
     size_t ip = 0;
@@ -67,13 +66,21 @@ int main()
 
         // printf("current_cmd = %d\n", current_cmd);
 
-        execute_cmd(&st, code, &ip, current_cmd);
+        err_t executed = execute_cmd(&st, code, &ip, current_cmd);
+
+        if (executed != ok)
+        {
+            printf("main: terminating process due to error\n");
+            return 0;
+        }
+
         if (current_cmd == HLT)
         {
             fclose(fp);
             printf("main: shutting down processor\n");
             return 0;
         }
+
         getchar(); // optionally
         ip++;
     }
@@ -84,46 +91,57 @@ int main()
 }
 
 
-void execute_cmd(st_t* st, int* code, size_t* ip, proc_commands cmd)
+err_t execute_cmd(st_t* st, int* code, size_t* ip, proc_commands cmd)
 {
     assert(st != NULL);
+
+    err_t executed = ok;
 
     switch (cmd)
     {
         case PUSH:
-            proc_push(st, code, ip);
+            executed = proc_push(st, code, ip);
             break;
 
         case ADD:
-            proc_calc(st, ADD);
+            executed = proc_calc(st, ADD);
             break;
 
         case SUB:
-            proc_calc(st, SUB);
+            executed = proc_calc(st, SUB);
             break;
 
         case MULT:
-            proc_calc(st, MULT);
+            executed = proc_calc(st, MULT);
             break;
 
         case DIV:
-            proc_calc(st, DIV);
+            executed = proc_calc(st, DIV);
             break;
 
         case SQRT:
-            proc_calc(st, SQRT);
+            executed = proc_calc(st, SQRT);
             break;
 
         case OUT:
-            proc_out(st);
+            executed = proc_out(st);
             break;
 
         case HLT:
-            proc_hlt(st);
+            executed = proc_hlt(st);
             break;
 
         default:
             printf("execute_cmd: unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, *ip);
+    }
+
+    if (executed == ok)
+    {
+        return ok;
+    }
+    else
+    {
+        return error;
     }
 }
 
