@@ -21,6 +21,7 @@ enum proc_commands
 enum err_t
 {
     ok,
+    error,
     wrong_number,
     wrong_cmd,
     stack_error

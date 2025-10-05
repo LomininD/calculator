@@ -3,160 +3,135 @@
 #include "stack/stack_dump.h"
 #include "processor_cmd.h"
 
-void calc_push(st_t* st, int* code, size_t* ip)
+err_t proc_push(st_t* st, int* code, size_t* ip)
 {
     assert(code != NULL);
 
     printf("execute_cmd: began push\n");
     int number = code[++*ip];
-
     st_return_err pushed = st_push(st, number);
 
     if (pushed == no_error)
     {
         st_dump(st);
         printf("execute_cmd: push succeeded\n");
+        return ok;
     }
     else
+    {
         printf("execute_cmd: push failed\n");
+        return error;
+    }
 }
 
 
-void calc_add(st_t* st)
+err_t proc_calc(st_t* st, proc_commands cmd)
 {
     assert(st != NULL);
 
-    printf("execute_cmd: began add\n");
+    const char* cmd_name = decode_cmd(cmd);
+    printf("execute_cmd: began %s \n", cmd_name);
 
     int a = 0;
     int b = 0;
-    st_return_err got_a = st_pop(st, &a);
-    st_return_err got_b = st_pop(st, &b);
-    int res = a + b;
+    st_return_err got_a = no_error;
+    st_return_err got_b = no_error;
+    int res = 0;
+
+    switch(cmd)
+    {
+        case ADD:
+            got_a = st_pop(st, &a);
+            got_b = st_pop(st, &b);
+            res = a + b;
+            break;
+
+        case SUB:
+            got_a = st_pop(st, &a);
+            got_b = st_pop(st, &b);
+            res = b - a;
+            break;
+
+        case MULT:
+            got_a = st_pop(st, &a);
+            got_b = st_pop(st, &b);
+            res = a * b;
+            break;
+
+        case DIV:
+            got_a = st_pop(st, &a);
+            got_b = st_pop(st, &b);
+
+            if (a == 0)
+            {
+                printf("execute_cmd: div failed - division by zero\n");
+                return error;
+            }
+
+            res = b / a;
+            break;
+
+        case SQRT:
+            got_a = st_pop(st, &a);
+
+            if (a < 0)
+            {
+                printf("execute_cmd: sqrt failed - cannot determine root of negative number\n");
+                return error;
+            }
+
+            res = sqrt(a);
+            break;
+    }
 
     if (got_a == no_error && got_b == no_error)
     {
         st_return_err pushed = st_push(st, res);
         if (pushed == no_error)
-            printf("execute_cmd: add succeeded, result = %d\n", res);
+        {
+            printf("execute_cmd: %s succeeded, result = %d\n", cmd_name, res);
+            return ok;
+        }
         else
-            printf("execute_cmd: add failed (failed to push the result)\n");
+        {
+            printf("execute_cmd: %s failed (failed to push the result)\n", cmd_name);
+            return error;
+        }
     }
     else
     {
-        printf("execute_cmd: add failed (not enough data in stack)\n");
+        printf("execute_cmd: %s failed (not enough data in stack)\n", cmd_name);
+        return error;
     }
 }
 
 
-void calc_sub(st_t* st)
+const char* decode_cmd (proc_commands cmd)
 {
-    assert(st != NULL);
-
-    printf("execute_cmd: began sub\n");
-
-    int a = 0;
-    int b = 0;
-    st_return_err got_a = st_pop(st, &a); // assert?
-    st_return_err got_b = st_pop(st, &b);
-    int res = b - a;
-
-    if (got_a == no_error && got_b == no_error)
+    switch (cmd)
     {
-        st_return_err pushed = st_push(st, res);
-        if (pushed == no_error)
-            printf("execute_cmd: sub succeeded, result = %d\n", res);
-        else
-            printf("execute_cmd: sub failed (failed to push the result)\n");
-    }
-    else
-    {
-        printf("execute_cmd: sub failed (not enough data in stack)\n");
-    }
-}
-
-
-void calc_mult(st_t* st)
-{
-    assert(st != NULL);
-
-    printf("execute_cmd: began mult\n");
-
-    int a = 0;
-    int b = 0;
-    st_return_err got_a = st_pop(st, &a); // assert?
-    st_return_err got_b = st_pop(st, &b);
-    int res = a * b;
-
-    if (got_a == no_error && got_b == no_error)
-    {
-        st_return_err pushed = st_push(st, res);
-        if (pushed == no_error)
-            printf("execute_cmd: mult succeeded, result = %d\n", res);
-        else
-            printf("execute_cmd: mult failed (failed to push the result)\n");
-    }
-    else
-    {
-        printf("execute_cmd: mult failed (not enough data in stack)\n");
+        case ADD:
+            return "add";
+            break;
+        case SUB:
+            return "sub";
+            break;
+        case MULT:
+            return "mult";
+            break;
+        case DIV:
+            return "div";
+            break;
+        case SQRT:
+            return "sqrt";
+            break;
+        default:
+            return "unknown command";
+            break;
     }
 }
 
-
-void calc_div(st_t* st)
-{
-    assert(st != NULL);
-
-    printf("execute_cmd: began div\n");
-
-    int a = 0;
-    int b = 0;
-
-    st_return_err got_a = st_pop(st, &a); // assert?
-    st_return_err got_b = st_pop(st, &b);
-    int res = b / a;
-
-    if (got_a == no_error && got_b == no_error)
-    {
-        st_return_err pushed = st_push(st, res);
-        if (pushed == no_error)
-            printf("execute_cmd: div succeeded, result = %d\n", res);
-        else
-            printf("execute_cmd: div failed (failed to push the result)\n");
-    }
-    else
-    {
-        printf("execute_cmd: div failed (not enough data in stack)\n");
-    }
-}
-
-
-void calc_sqrt(st_t* st)
-{
-    assert(st != NULL);
-
-    printf("execute_cmd: began sqrt\n");
-
-    int a = 0;
-    st_return_err got_a = st_pop(st, &a);
-    int res = sqrt(a);
-
-    if (got_a == no_error)
-    {
-        st_return_err pushed = st_push(st, res);
-        if (pushed == no_error)
-            printf("execute_cmd: sqrt succeeded, result = %d\n", res);
-        else
-            printf("execute_cmd: sqrt failed (failed to push the result)\n");
-    }
-    else
-    {
-        printf("execute_cmd: sqrt failed (not enough data in stack)\n");
-    }
-}
-
-
-void calc_out(st_t* st)
+err_t proc_out(st_t* st)
 {
     assert(st != NULL);
 
@@ -169,15 +144,17 @@ void calc_out(st_t* st)
     {
         printf("%d\n", el);
         printf("execute_cmd: out succeeded\n");
+        return ok;
     }
     else
     {
         printf("execute_cmd: out failed (not enough data in stack)\n");
+        return error;
     }
 }
 
 
-void calc_hlt(st_t* st)
+err_t proc_hlt(st_t* st)
 {
     assert(st != NULL);
 
@@ -188,10 +165,12 @@ void calc_hlt(st_t* st)
     if (terminated == no_error)
     {
         printf("execute_cmd: stack destroyed, hlt succeeded\n");
+        return ok;
     }
     else
     {
         printf("execute_cmd: hlt failed\n");
+        return error;
     }
 }
 

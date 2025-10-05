@@ -71,7 +71,7 @@ int main()
         if (current_cmd == HLT)
         {
             fclose(fp);
-            printf("main: shutting down calculator \n");
+            printf("main: shutting down processor\n");
             return 0;
         }
         getchar(); // optionally
@@ -91,35 +91,35 @@ void execute_cmd(st_t* st, int* code, size_t* ip, proc_commands cmd)
     switch (cmd)
     {
         case PUSH:
-            calc_push(st, code, ip);
+            proc_push(st, code, ip);
             break;
 
         case ADD:
-            calc_add(st);
+            proc_calc(st, ADD);
             break;
 
         case SUB:
-            calc_sub(st);
+            proc_calc(st, SUB);
             break;
 
         case MULT:
-            calc_mult(st);
+            proc_calc(st, MULT);
             break;
 
         case DIV:
-            calc_div(st);
+            proc_calc(st, DIV);
             break;
 
         case SQRT:
-            calc_sqrt(st);
+            proc_calc(st, SQRT);
             break;
 
         case OUT:
-            calc_out(st);
+            proc_out(st);
             break;
 
         case HLT:
-            calc_hlt(st);
+            proc_hlt(st);
             break;
 
         default:
