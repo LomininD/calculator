@@ -4,14 +4,16 @@
 #include <string.h>
 
 #include "stack/font_styles.h"
-#include "calculator_cmd.h"
+#include "processor_properties.h"
 
 // add spell check
+// if no hlt
 // refactor raw_cmd
+// fix push input
 // add debug messages in other stream using printf
 // debug output in console program output in file
 
-calc_commands determine_cmd(char* cmd);
+proc_commands determine_cmd(char* cmd);
 err_t read_number_asm(int* number);
 void clear_buffer(void);
 
@@ -26,7 +28,7 @@ int main()
     {
         clear_buffer();
 
-        calc_commands cmd = determine_cmd(raw_cmd);
+        proc_commands cmd = determine_cmd(raw_cmd);
 
         if (cmd == HLT)
             return 0;
@@ -43,6 +45,8 @@ err_t read_number_asm(int* number)
 
     int success = scanf("%d", number);
 
+    //printf("%d\n", *number);
+
     if (success == 1)
     {
         printf("%d\n", *number);
@@ -57,7 +61,7 @@ err_t read_number_asm(int* number)
 }
 
 
-calc_commands determine_cmd(char* cmd)
+proc_commands determine_cmd(char* cmd)
 {
     assert(cmd != NULL);
 

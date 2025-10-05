@@ -11,9 +11,6 @@ st_return_err st_ctor (st_t* st, size_t capacity)
         return no_stack;
     }
 
-    if(capacity == 0)
-            printf(MAKE_BOLD_RED("WARNING: ") "stack of 0 elements is not usable\n");
-
     st->data = (st_data_type*) calloc (capacity + 2, sizeof(st_data_type));
 
     if (st->data == NULL)

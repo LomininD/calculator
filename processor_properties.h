@@ -1,11 +1,11 @@
-#ifndef INPUT_H
-#define INPUT_H
+#ifndef PROCESSOR_PROPERTIES_H
+#define PROCESSOR_PROPERTIES_H
 
 #include "stack/stack.h"
 #include "stack/stack_dump.h"
 
 
-enum calc_commands
+enum proc_commands
 {
     UNKNOWN,
     PUSH,
@@ -23,6 +23,7 @@ enum err_t
     ok,
     wrong_number,
     wrong_cmd,
+    stack_error
 };
 
 #endif

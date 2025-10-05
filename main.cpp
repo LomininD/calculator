@@ -8,8 +8,8 @@
 #include "calculator_cmd.h"
 #include "stack/stack_dump.h"
 
-calc_commands determine_cmd(char* cmd);
-void execute_cmd(st_t* st, calc_commands cmd);
+proc_commands determine_cmd(char* cmd);
+void execute_cmd(st_t* st, proc_commands cmd);
 st_t initialise_stack(size_t capacity);
 
 //TODO: split output streams
@@ -29,7 +29,7 @@ int main()
     {
         clear_buffer();
 
-        calc_commands cmd = determine_cmd(raw_cmd);
+        proc_commands cmd = determine_cmd(raw_cmd);
 
         execute_cmd(&st, cmd);
 
@@ -47,7 +47,7 @@ int main()
 }
 
 
-calc_commands determine_cmd(char* cmd)
+proc_commands determine_cmd(char* cmd)
 {
     assert(cmd != NULL);
 
@@ -92,7 +92,7 @@ calc_commands determine_cmd(char* cmd)
 }
 
 
-void execute_cmd(st_t* st, calc_commands cmd)
+void execute_cmd(st_t* st, proc_commands cmd)
 {
     assert(st != NULL);
 
