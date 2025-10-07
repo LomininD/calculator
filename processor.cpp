@@ -24,8 +24,10 @@ struct proc_info
 
 err_t proc_ctor(FILE* fp, proc_info* proc);
 err_t prepare_file(FILE* fp, proc_info* proc);
-err_t execute_cmd(st_t* st, int* code, size_t* ip, proc_commands cmd);
+err_t execute_cmd(proc_info* proc, proc_commands cmd);
 err_t initialise_stack(size_t capacity, st_t* st);
+err_t check_ip(proc_info* proc);
+int is_jmp_type(proc_commands cmd);
 
 // if function couldn't complete the direct task it prints error message and returns error
 // if function gets error message from other function it redirects it to the
@@ -35,12 +37,10 @@ err_t initialise_stack(size_t capacity, st_t* st);
 
 int main()
 {
-    printf(MAKE_BOLD("+++ PROCESSOR +++\n"));
+    printf(MAKE_BOLD("+++ PROCESSOR +++\n\n"));
 
     FILE* fp = fopen("program.out", "r"); // add ability to determine file
-
     proc_info proc = {};
-
     err_t initialised = proc_ctor(fp, &proc);
 
     if (initialised != ok)
@@ -67,16 +67,15 @@ int main()
     }
     //printf("prg_size: %zu\n", prg_size);
 
-    size_t ip = 0;
     proc_commands current_cmd = UNKNOWN;
 
-    while (ip < proc.prg_size)
+    while (proc.ip < proc.prg_size)
     {
-        current_cmd = (proc_commands) proc.code[ip];
+        current_cmd = (proc_commands) proc.code[proc.ip];
 
         // printf("current_cmd = %d\n", current_cmd);
 
-        err_t executed = execute_cmd(&proc.st, proc.code, &ip, current_cmd);
+        err_t executed = execute_cmd(&proc, current_cmd);
 
         if (executed != ok)
         {
@@ -92,7 +91,9 @@ int main()
         }
 
         getchar(); // optionally
-        ip++;
+
+        if (!is_jmp_type(current_cmd))
+            proc.ip++;
     }
 
     printf("main: forced process termination, no HLT got\n");
@@ -101,48 +102,49 @@ int main()
 }
 
 
-err_t execute_cmd(st_t* st, int* code, size_t* ip, proc_commands cmd)
+err_t execute_cmd(proc_info* proc, proc_commands cmd) // refactor with struct
 {
-    assert(st != NULL);
+    assert(proc != NULL);
 
     err_t executed = ok;
 
     switch (cmd)
     {
         case PUSH:
-            executed = proc_push(st, code, ip);
+            executed = proc_push(&proc->st, proc->code, &proc->ip);
             break;
 
         case ADD:
-            executed = proc_calc(st, ADD);
-            break;
-
         case SUB:
-            executed = proc_calc(st, SUB);
-            break;
-
         case MULT:
-            executed = proc_calc(st, MULT);
-            break;
-
         case DIV:
-            executed = proc_calc(st, DIV);
-            break;
-
         case SQRT:
-            executed = proc_calc(st, SQRT);
+            executed = proc_calc(&proc->st, cmd);
             break;
 
         case OUT:
-            executed = proc_out(st);
+            executed = proc_out(&proc->st);
+            break;
+
+        case JMP:
+            executed = proc_jmp(&proc->st, proc->code, proc->prg_size, &proc->ip);
+            break;
+
+        case JB:
+        case JBE:
+        case JA:
+        case JAE:
+        case JE:
+        case JNE:
+            executed = proc_cond_jmp(&proc->st, proc->code, proc->prg_size, &proc->ip, cmd);
             break;
 
         case HLT:
-            executed = proc_hlt(st);
+            executed = proc_hlt(&proc->st);
             break;
 
         default:
-            printf("execute_cmd: unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, *ip);
+            printf("execute_cmd: unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, proc->ip);
     }
 
     if (executed == ok)
@@ -243,4 +245,39 @@ err_t initialise_stack(size_t capacity, st_t* st)
     }
 }
 
+
+int is_jmp_type(proc_commands cmd)
+{
+    switch (cmd)
+    {
+        case JMP:
+        case JB:
+        case JBE:
+        case JA:
+        case JAE:
+        case JE:
+        case JNE:
+            return 1;
+            break;
+        default:
+            return 0;
+            break;
+    };
+}
+
+err_t check_ip(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    if (proc->ip >= proc->prg_size)
+    {
+        printf("check_ip: " MAKE_BOLD_RED("ERROR:") " ip value (%zu) is bigger than byte code size (%zu)\n", proc->ip, proc->prg_size);
+        return error;
+    }
+    else
+    {
+        printf("check_ip: ip value (%zu) is ok\n", proc->ip);
+        return ok;
+    }
+}
 

@@ -6,7 +6,7 @@
 
 // if file is updated UPDATE VERSION
 
-const int version = 2;
+const int version = 3;
 
 enum proc_commands
 {
@@ -19,6 +19,12 @@ enum proc_commands
     SQRT,
     OUT,
     JMP,
+    JB,
+    JBE,
+    JA,
+    JAE,
+    JE,
+    JNE,
     HLT
 };
 

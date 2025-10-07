@@ -108,8 +108,6 @@ int main(int argc, char* argv[])
 
         if (asm_data.cmd == OUT)
             debug.got_out = 1;
-        else
-            debug.got_out = 0;
     }
 
     check_warnings(&debug, &files);
@@ -277,6 +275,103 @@ err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* deb
         printf("determine_cmd: recognized out\n");
         fprintf(files->output_file, "%d\n", OUT);
         asm_data->cmd = OUT;
+        return ok;
+    }
+    else if (strcmp("JMP", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized jmp\n");
+        fprintf(files->output_file, "%d\n", JMP);
+        asm_data->cmd = JMP;
+
+        int number = 0;
+        err_t is_read = read_number_arg(files, asm_data, debug, &number);
+
+        if (is_read != ok)
+            return error;
+
+        return ok;
+    }
+    else if (strcmp("JB", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized jb\n");
+        fprintf(files->output_file, "%d\n", JB);
+        asm_data->cmd = JB;
+
+        int number = 0;
+        err_t is_read = read_number_arg(files, asm_data, debug, &number);
+
+        if (is_read != ok)
+            return error;
+
+        return ok;
+    }
+    else if (strcmp("JBE", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized jbe\n");
+        fprintf(files->output_file, "%d\n", JBE);
+        asm_data->cmd = JBE;
+
+        int number = 0;
+        err_t is_read = read_number_arg(files, asm_data, debug, &number);
+
+        if (is_read != ok)
+            return error;
+
+        return ok;
+    }
+    else if (strcmp("JA", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized ja\n");
+        fprintf(files->output_file, "%d\n", JA);
+        asm_data->cmd = JA;
+
+        int number = 0;
+        err_t is_read = read_number_arg(files, asm_data, debug, &number);
+
+        if (is_read != ok)
+            return error;
+
+        return ok;
+    }
+    else if (strcmp("JAE", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized jae\n");
+        fprintf(files->output_file, "%d\n", JAE);
+        asm_data->cmd = JAE;
+
+        int number = 0;
+        err_t is_read = read_number_arg(files, asm_data, debug, &number);
+
+        if (is_read != ok)
+            return error;
+
+        return ok;
+    }
+    else if (strcmp("JE", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized je\n");
+        fprintf(files->output_file, "%d\n", JE);
+        asm_data->cmd = JE;
+
+        int number = 0;
+        err_t is_read = read_number_arg(files, asm_data, debug, &number);
+
+        if (is_read != ok)
+            return error;
+
+        return ok;
+    }
+    else if (strcmp("JNE", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized jne\n");
+        fprintf(files->output_file, "%d\n", JNE);
+        asm_data->cmd = JNE;
+
+        int number = 0;
+        err_t is_read = read_number_arg(files, asm_data, debug, &number);
+        if (is_read != ok)
+            return error;
+
         return ok;
     }
     else if (strcmp("HLT", asm_data->raw_cmd) == 0)

@@ -125,6 +125,24 @@ const char* decode_cmd (proc_commands cmd)
         case SQRT:
             return "sqrt";
             break;
+        case JB:
+            return "JB";
+            break;
+        case JBE:
+            return "JBE";
+            break;
+        case JA:
+            return "JA";
+            break;
+        case JAE:
+            return "JAE";
+            break;
+        case JE:
+            return "JE";
+            break;
+        case JNE:
+            return "JNE";
+            break;
         default:
             return "unknown command";
             break;
@@ -152,6 +170,97 @@ err_t proc_out(st_t* st)
         return error;
     }
 }
+
+
+err_t proc_jmp(st_t* st, int* code, int prg_size, size_t* ip)
+{
+    assert(st != NULL);
+    assert(code != NULL);
+    assert(ip != NULL);
+
+    printf("execute_cmd: began jmp\n");
+
+    size_t new_pointer = code[++*ip];
+    *ip = new_pointer;
+
+    if (new_pointer >= prg_size)
+    {
+        printf("proc_jmp: " MAKE_BOLD_RED("ERROR:") " new IP points on a non-existed position\n");
+        return error;
+    }
+
+    printf("execute_cmd: done jmp (new_position = %zu)\n", new_pointer);
+    return ok;
+}
+
+
+err_t proc_cond_jmp(st_t* st, int* code, int prg_size, size_t* ip, proc_commands cmd)
+{
+    assert(st != NULL);
+    assert(code != NULL);
+    assert(ip != NULL);
+
+    const char* cmd_name = decode_cmd(cmd);
+
+    printf("execute_cmd: began conditional jmp (%s)\n", cmd_name);
+
+    int a = 0;
+    int b = 0;
+    st_return_err got_a = st_pop(st, &a);
+    st_return_err got_b = st_pop(st, &b);
+
+    if (got_a != no_error || got_b != no_error)
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (not enough data in stack)\n", cmd_name);
+        return error;
+    }
+
+    int res = 0;
+
+    switch(cmd)
+    {
+        case JB:
+            res = b < a;
+            break;
+        case JBE:
+            res = b <= a;
+            break;
+        case JA:
+            res = b > a;
+            break;
+        case JAE:
+            res = b >= a;
+            break;
+        case JE:
+            res = b == a;
+            break;
+        case JNE:
+            res = b != a;
+            break;
+        default:
+            printf("proc_cond_jmp: could not recognize type of conditional jump\n");
+            return error;
+    };
+
+    if (res)
+    {
+        printf("proc_cond_jmp: condition is fulfilled\n");
+        err_t jumped = proc_jmp(st, code, prg_size, ip);
+        if (jumped != ok)
+            return error;
+
+    }
+    else
+    {
+        printf("proc_cond_jmp: condition is not fulfilled\n");
+        *ip += 2;
+    }
+
+    printf("execute_cmd: done conditional jmp (%s)\n", cmd_name);
+    return ok;
+}
+
+
 
 
 err_t proc_hlt(st_t* st)
