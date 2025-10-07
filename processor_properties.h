@@ -4,7 +4,9 @@
 #include "stack/stack.h"
 #include "stack/stack_dump.h"
 
-const int version = 1;
+// if file is updated UPDATE VERSION
+
+const int version = 2;
 
 enum proc_commands
 {
@@ -16,6 +18,7 @@ enum proc_commands
     MULT,
     SQRT,
     OUT,
+    JMP,
     HLT
 };
 

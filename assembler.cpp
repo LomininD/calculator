@@ -7,6 +7,7 @@
 #include "stack/font_styles.h"
 #include "processor_properties.h"
 
+
 struct files_info
 {
     char* input_file_name;
@@ -32,6 +33,7 @@ struct debug_info
     int got_something;
 };
 
+
 // if no argument for output is given, output to file with the same name but .out extention
 // solve problem with unexpected symbols
 // debug messages in console (in debug mode) - user can redirect them to file
@@ -39,10 +41,12 @@ struct debug_info
 // errors and introductory information in console (always)
 
 err_t initialise_assembler(int argc, char* argv[], files_info* files, assembler_info* asm_data, debug_info* debug);
+err_t fill_file_preamble(files_info* files);
 err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* debug);
-err_t read_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number);
+err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number);
 void readline(assembler_info* asm_data, files_info* file);
 void check_warnings(debug_info* debug, files_info* files);
+
 
 int main(int argc, char* argv[])
 {
@@ -63,6 +67,8 @@ int main(int argc, char* argv[])
     }
 
     printf("assembler: began assembly\n\n");
+
+    fill_file_preamble(&files);
 
     while (!asm_data.end)
     {
@@ -171,7 +177,21 @@ err_t initialise_assembler(int argc, char* argv[], files_info* files, assembler_
 }
 
 
-err_t read_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number)
+err_t fill_file_preamble(files_info* files)
+{
+    assert(files != NULL);
+
+    fprintf(files->output_file, "%d\n", 'L');
+    fprintf(files->output_file, "%d\n", 'M');
+    fprintf(files->output_file, "%d\n", 'D');
+
+    fprintf(files->output_file, "%d\n", version);
+
+    return ok;
+}
+
+
+err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number)
 {
     assert(files != NULL);
     assert(asm_data != NULL);
@@ -182,14 +202,14 @@ err_t read_arg(files_info* files, assembler_info* asm_data, debug_info* debug, i
 
     if (success == 1)
     {
-        printf("read_arg: recognised arg %d\n", *number);
+        printf("read_number_arg: recognised arg %d\n", *number);
         fprintf(files->output_file, "%d\n", *number);
         return ok;
     }
     else
     {
         printf("\n");
-        printf("read_arg: %s:%d: " MAKE_BOLD_RED("ERROR:") " failed to get arg\n", files->input_file_name, debug->current_line);
+        printf("read_number_arg: %s:%d: " MAKE_BOLD_RED("ERROR:") " failed to get arg\n", files->input_file_name, debug->current_line);
         return wrong_number;
     }
 }
@@ -209,7 +229,7 @@ err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* deb
         asm_data->cmd = PUSH;
 
         int number = 0;
-        err_t is_read = read_arg(files, asm_data, debug, &number);
+        err_t is_read = read_number_arg(files, asm_data, debug, &number);
 
         if (is_read != ok)
             return error;
@@ -290,6 +310,7 @@ void readline(assembler_info* asm_data, files_info* file)
         {
             if (c == EOF)
                 asm_data->end = 1;
+
             break;
         }
 
