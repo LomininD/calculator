@@ -1,17 +1,19 @@
-PUSH 1
-PUSH 2
-JB 6        ; goes to next instruction
-PUSH 1
-PUSH 2
-JA 0        ; cond not fulfilled
-PUSH 2
-PUSH 0
-JB 2        ; cond not fulfilled
-PUSH 2
-PUSH 0
-JBE 2       ; cond not fulfilled
-PUSH 5
-PUSH 5
-JAE 31      ; skips next instruction
-ADD
+IN
+IN
+JB 4
+IN
+IN
+JBE 8
+IN
+IN
+JA 12
+IN
+IN
+JAE 16
+IN
+IN
+JE 20
+IN
+IN
+JNE 24
 HLT

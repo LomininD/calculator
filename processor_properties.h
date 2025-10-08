@@ -6,7 +6,7 @@
 
 // if file is updated UPDATE VERSION
 
-const int version = 3;
+const int version = 4;
 
 enum proc_commands
 {
@@ -17,6 +17,7 @@ enum proc_commands
     DIV,
     MULT,
     SQRT,
+    IN,
     OUT,
     JMP,
     JB,

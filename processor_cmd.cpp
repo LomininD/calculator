@@ -3,6 +3,11 @@
 #include "stack/stack_dump.h"
 #include "processor_cmd.h"
 
+
+static int check_buffer();
+static void clear_buffer(void);
+
+
 err_t proc_push(st_t* st, int* code, size_t* ip)
 {
 
@@ -153,6 +158,38 @@ const char* decode_cmd (proc_commands cmd)
     }
 }
 
+
+err_t proc_in(st_t* st)
+{
+    assert(st != NULL);
+
+    printf("execute_cmd: began in\n");
+
+    int inp = 0;
+    int scanned = scanf("%d", &inp);
+    if (scanned != 1 || !check_buffer()) // -1 if big numbers
+    {
+        clear_buffer();
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " in failed (could not get value from input stream)\n");
+        return error;
+    }
+
+    st_return_err pushed = st_push(st, inp);
+
+    if (pushed == no_error)
+    {
+        st_dump(st);
+        printf("execute_cmd: in succeeded\n");
+        return ok;
+    }
+    else
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " in failed (could not push read value to stack)\n");
+        return error;
+    }
+}
+
+
 err_t proc_out(st_t* st)
 {
     assert(st != NULL);
@@ -285,6 +322,23 @@ err_t proc_hlt(st_t* st)
         printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " hlt failed\n");
         return error;
     }
+}
+
+
+static int check_buffer()
+{
+    int c = 0;
+    while ((c = getchar()) != EOF && c != '\n')
+        if (c != ' ' && c != '\n' && c != '\t')
+            return 0;
+    return 1;
+}
+
+
+static void clear_buffer(void)
+{
+    int c = '\0';
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
 

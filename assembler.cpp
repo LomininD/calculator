@@ -270,6 +270,13 @@ err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* deb
         asm_data->cmd = SQRT;
         return ok;
     }
+    else if (strcmp("IN", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized in\n");
+        fprintf(files->output_file, "%d\n", IN);
+        asm_data->cmd = IN;
+        return ok;
+    }
     else if (strcmp("OUT", asm_data->raw_cmd) == 0)
     {
         printf("determine_cmd: recognized out\n");

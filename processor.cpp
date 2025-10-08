@@ -165,7 +165,9 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd) // refactor with struct
         case SQRT:
             executed = proc_calc(&proc->st, cmd);
             break;
-
+        case IN:
+            executed = proc_in(&proc->st);
+            break;
         case OUT:
             executed = proc_out(&proc->st);
             break;
