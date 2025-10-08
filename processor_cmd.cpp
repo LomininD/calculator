@@ -33,6 +33,66 @@ err_t proc_push(st_t* st, int* code, size_t* ip)
 }
 
 
+err_t proc_pushreg(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    printf("execute_cmd: began pushreg\n");
+
+    int reg = proc->code[++proc->ip];
+
+    if (reg < 0 || reg >= register_amount)
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " PUSHREG failed (got non-existent register index %d)\n", reg);
+        return error;
+    }
+
+    int number = 0;
+    st_return_err got_number = st_pop(&proc->st, &number);
+
+    if (got_number != no_error)
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " PUSHREG failed (not enough data in stack)\n");
+        return error;
+    }
+
+    proc->registers[reg] = number;
+    printf("execute_cmd: PUSHREG succeeded\n");
+    st_dump(&proc->st);
+
+    return ok;
+}
+
+
+err_t proc_popreg(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    printf("execute_cmd: began popreg\n");
+
+    int reg = proc->code[++proc->ip];
+
+    if (reg < 0 || reg >= register_amount)
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " POPREG failed (got non-existent register index %d)\n", reg);
+        return error;
+    }
+
+    st_return_err pushed = st_push(&proc->st, proc->registers[reg]);
+
+    if (pushed != no_error)
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " POPREG failed (could not push data to stack)\n");
+        return error;
+    }
+
+    printf("execute_cmd: POPREG succeeded\n");
+    st_dump(&proc->st);
+
+    return ok;
+}
+
+
 err_t proc_calc(st_t* st, proc_commands cmd)
 {
     assert(st != NULL);
@@ -224,7 +284,7 @@ err_t proc_jmp(st_t* st, int* code, int prg_size, size_t* ip)
     size_t new_pointer = code[++*ip];
     *ip = new_pointer;
 
-    if (new_pointer >= prg_size)
+    if (new_pointer >= prg_size || new_pointer < 0)
     {
         printf("proc_jmp: " MAKE_BOLD_RED("ERROR:") " new IP points on a non-existed position in code\n");
         return error;

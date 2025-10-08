@@ -1,5 +1,3 @@
-// TODO: IN instruction
-// TODO: PUSHREG POPREG / PUSH POP for regs (more likely)
 // TODO: add encoder of registers name in assembler
 // TODO: reallocating array for processor / assembler counts number of lines and puts it in the end of file
 // TODO: test program: squares of number
@@ -8,8 +6,7 @@
 // TODO: processor prints version, credits in the beginning
 // TODO: destructor
 // TODO: *DMP
-// TODO: (done) refactor proc main (make new function the reads from file)
-// TODO: (done) give to processor file with byte code as cmd line argument + debug cases
+// TODO: (done) PUSHREG POPREG / PUSH POP for regs (more likely)
 
 // TODO: improve font_styles macros
 // TODO: processor === dump ===

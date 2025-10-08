@@ -44,6 +44,8 @@ err_t initialise_assembler(int argc, char* argv[], files_info* files, assembler_
 err_t fill_file_preamble(files_info* files);
 err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* debug);
 err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number);
+err_t read_string_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number);
+int decode_reg_name(char* arg);
 void readline(assembler_info* asm_data, files_info* file);
 void check_warnings(debug_info* debug, files_info* files);
 
@@ -207,11 +209,46 @@ err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* d
     else
     {
         printf("\n");
-        printf("read_number_arg: %s:%d: " MAKE_BOLD_RED("ERROR:") " failed to get arg\n", files->input_file_name, debug->current_line);
+        printf("read_number_arg: %s:%d: " MAKE_BOLD_RED("ERROR:") " failed to get arg\n",                   files->input_file_name, debug->current_line);
         return wrong_number;
     }
 }
 
+
+err_t read_string_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number)
+{
+    assert(files != NULL);
+    assert(asm_data != NULL);
+    assert(debug != NULL);
+    assert(number != NULL);
+
+    char arg[3] = {};
+    int success = sscanf(asm_data->str, "%*s %2s", arg); // how to fix wrong symbols in the end
+
+    if (success == 1)
+    {
+        printf("read_string_arg: recognised arg %s\n", arg);
+        int reg_num = decode_reg_name(arg);
+        *number = reg_num;
+        printf("read_string_arg: got register index: %d\n", *number);
+        fprintf(files->output_file, "%d\n", *number);
+        return ok;
+    }
+    else
+    {
+        printf("\n");
+        printf("read_string_arg: %s:%d: " MAKE_BOLD_RED("ERROR:") " failed to get arg\n",                   files->input_file_name, debug->current_line);
+        return wrong_number;
+    }
+}
+
+int decode_reg_name(char* arg)
+{
+    assert(arg != NULL);
+
+    int reg = arg[0] - 'A';
+    return reg;
+}
 
 err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* debug)
 {
@@ -228,6 +265,36 @@ err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* deb
 
         int number = 0;
         err_t is_read = read_number_arg(files, asm_data, debug, &number);
+
+        if (is_read != ok)
+            return error;
+
+        return ok;
+    }
+    else if (strcmp("PUSHREG", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized pushreg\n");
+
+        fprintf(files->output_file, "%d\n", PUSHREG);
+        asm_data->cmd = PUSHREG;
+
+        int number = 0;
+        err_t is_read = read_string_arg(files, asm_data, debug, &number);
+
+        if (is_read != ok)
+            return error;
+
+        return ok;
+    }
+    else if (strcmp("POPREG", asm_data->raw_cmd) == 0)
+    {
+        printf("determine_cmd: recognized popreg\n");
+
+        fprintf(files->output_file, "%d\n", POPREG);
+        asm_data->cmd = POPREG;
+
+        int number = 0;
+        err_t is_read = read_string_arg(files, asm_data, debug, &number);
 
         if (is_read != ok)
             return error;

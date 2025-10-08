@@ -7,6 +7,8 @@
 
 const char* decode_cmd (proc_commands cmd);
 err_t proc_push(st_t* st, int* code, size_t* ip);
+err_t proc_pushreg(proc_info* proc);
+err_t proc_popreg(proc_info* proc);
 err_t proc_calc(st_t* st, proc_commands cmd);
 err_t proc_in(st_t* st);
 err_t proc_out(st_t* st);

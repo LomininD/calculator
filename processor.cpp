@@ -4,20 +4,12 @@
 #include <string.h>
 #include <sys/stat.h>
 
+
 #include "processor_properties.h"
 #include "processor_cmd.h"
 #include "stack/stack.h"
 #include "stack/font_styles.h"
 #include "stack/stack_dump.h"
-
-struct proc_info
-{
-    int code[100]; // refactor using calloc and realloc or store file size in file
-    size_t prg_size;
-    st_t st;
-    int registers[8];
-    size_t ip;
-};
 
 // make printf macros for debug
 // stack information and program info in debug file if mode is not debug
@@ -157,7 +149,12 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd) // refactor with struct
         case PUSH:
             executed = proc_push(&proc->st, proc->code, &proc->ip);
             break;
-
+        case PUSHREG:
+            executed = proc_pushreg(proc);
+            break;
+        case POPREG:
+            executed = proc_popreg(proc);
+            break;
         case ADD:
         case SUB:
         case MULT:
