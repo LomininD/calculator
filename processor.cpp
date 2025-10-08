@@ -22,12 +22,14 @@ struct proc_info
 // make printf macros for debug
 // stack information and program info in debug file if mode is not debug
 
+err_t open_file(FILE** fp, int argc, char* argv[]);
 err_t proc_ctor(FILE* fp, proc_info* proc);
 err_t prepare_file(FILE* fp, proc_info* proc);
 err_t execute_cmd(proc_info* proc, proc_commands cmd);
 err_t initialise_stack(size_t capacity, st_t* st);
 err_t check_ip(proc_info* proc);
 int is_jmp_type(proc_commands cmd);
+void read_byte_code(FILE* fp, proc_info* proc);
 
 // if function couldn't complete the direct task it prints error message and returns error
 // if function gets error message from other function it redirects it to the
@@ -35,19 +37,94 @@ int is_jmp_type(proc_commands cmd);
 //TODO: split output streams ???
 // refactor stack only in case of splitting streams
 
-int main()
+int main(int argc, char* argv[])
 {
     printf(MAKE_BOLD("+++ PROCESSOR +++\n\n"));
 
-    FILE* fp = fopen("program.out", "r"); // add ability to determine file
+    FILE* fp = NULL;
+
+    err_t opened = open_file(&fp, argc, argv);
+
+    if (opened != ok)
+    {
+        printf("main: terminating process due to error\n"); // macros
+    return 0; // macros
+    }
+
     proc_info proc = {};
     err_t initialised = proc_ctor(fp, &proc);
 
     if (initialised != ok)
     {
-        printf("main: terminating process due to error\n");
+        fclose(fp); // dtor
+        printf("main: terminating process due to error\n"); // macros
         return 0;
     }
+
+    read_byte_code(fp, &proc);
+
+    proc_commands current_cmd = UNKNOWN;
+
+    while (proc.ip < proc.prg_size)
+    {
+        current_cmd = (proc_commands) proc.code[proc.ip];
+        err_t executed = execute_cmd(&proc, current_cmd);
+
+        if (executed != ok)
+        {
+            fclose(fp); // dtor
+            printf("main: terminating process due to error\n"); //macros
+            return 0;
+        }
+
+        if (current_cmd == HLT)
+        {
+            fclose(fp); // dtor
+            printf("main: shutting down processor\n");
+            return 0;
+        }
+
+        if (!is_jmp_type(current_cmd))
+            proc.ip++;
+
+        getchar(); // optionally
+    }
+
+    printf("main: forced process termination, no HLT got\n");
+    fclose(fp); // dtor
+    return 0;
+}
+
+
+
+err_t open_file(FILE** fp, int argc, char* argv[])
+{
+    assert(argv != NULL);
+
+    if (argc == 2)
+    {
+        *fp = fopen(argv[1], "r");
+        if (*fp == NULL)
+        {
+            printf("open_file: " MAKE_BOLD_RED("ERROR:") " could not open the file\n");
+            printf(MAKE_GREY("Note: file name may be incorrect\n"));
+            return error;
+        }
+    }
+    else
+    {
+        printf("open_file: " MAKE_BOLD_RED("ERROR:") " no file was provided\n");
+        return error;
+    }
+
+    return ok;
+}
+
+
+void read_byte_code(FILE* fp, proc_info* proc)
+{
+    assert(fp != NULL);
+    assert(proc != NULL);
 
     int cmd = 0;
     int i = 0;
@@ -61,44 +138,11 @@ int main()
             break;
 
         //printf("scanned_cmd: %d\n", cmd);
-        proc.prg_size++;
-        proc.code[i] = cmd;
+        proc->prg_size++;
+        proc->code[i] = cmd;
         i++;
     }
     //printf("prg_size: %zu\n", prg_size);
-
-    proc_commands current_cmd = UNKNOWN;
-
-    while (proc.ip < proc.prg_size)
-    {
-        current_cmd = (proc_commands) proc.code[proc.ip];
-
-        // printf("current_cmd = %d\n", current_cmd);
-
-        err_t executed = execute_cmd(&proc, current_cmd);
-
-        if (executed != ok)
-        {
-            printf("main: terminating process due to error\n");
-            return 0;
-        }
-
-        if (current_cmd == HLT)
-        {
-            fclose(fp);
-            printf("main: shutting down processor\n");
-            return 0;
-        }
-
-        getchar(); // optionally
-
-        if (!is_jmp_type(current_cmd))
-            proc.ip++;
-    }
-
-    printf("main: forced process termination, no HLT got\n");
-    fclose(fp);
-    return 0;
 }
 
 
@@ -160,6 +204,7 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd) // refactor with struct
 
 err_t proc_ctor(FILE* fp, proc_info* proc)
 {
+    assert(fp != NULL);
     assert(proc != NULL);
 
     printf("proc_ctor: began initialising processor\n");

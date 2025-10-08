@@ -424,12 +424,14 @@ void readline(assembler_info* asm_data, files_info* file)
     }
 
     *(asm_data->str + symbol_ind) = '\0';
-    //return asm_data->str; // ????
 }
 
 
 void check_warnings(debug_info* debug, files_info* files)
 {
+    assert(debug != NULL);
+    assert(files != NULL);
+
     if (debug->got_something)
     {
         if (!debug->got_out)

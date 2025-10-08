@@ -5,7 +5,10 @@
 
 err_t proc_push(st_t* st, int* code, size_t* ip)
 {
+
+    assert(st != NULL);
     assert(code != NULL);
+    assert(ip != NULL);
 
     printf("execute_cmd: began push\n");
     int number = code[++*ip];
@@ -89,6 +92,7 @@ err_t proc_calc(st_t* st, proc_commands cmd)
         st_return_err pushed = st_push(st, res);
         if (pushed == no_error)
         {
+            st_dump(st);
             printf("execute_cmd: %s succeeded, result = %d\n", cmd_name, res);
             return ok;
         }
@@ -185,7 +189,7 @@ err_t proc_jmp(st_t* st, int* code, int prg_size, size_t* ip)
 
     if (new_pointer >= prg_size)
     {
-        printf("proc_jmp: " MAKE_BOLD_RED("ERROR:") " new IP points on a non-existed position\n");
+        printf("proc_jmp: " MAKE_BOLD_RED("ERROR:") " new IP points on a non-existed position in code\n");
         return error;
     }
 
