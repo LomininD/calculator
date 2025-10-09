@@ -3,7 +3,7 @@ PUSH -2
 MULT
 PUSH 4
 DIV         ; just a stupid comment
-PUSH 1
+PUSH 4
 ADD
 PUSH -24
 

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "../processor_src/processor_properties.h"
 
+// extern const char* output_name =  "program.out";
 
 struct files_info
 {
@@ -20,6 +21,7 @@ struct assembler_info
     char raw_cmd[32];
     proc_commands cmd;
     bool end;
+    int pos;
 };
 
 struct debug_info
@@ -30,5 +32,8 @@ struct debug_info
     bool not_empty;
 };
 
+#define $$ fprintf(stderr, "line: %d\n", __LINE__);
+
+#define $$$(...) { fprintf(stderr, "%s... ", #__VA_ARGS__); __VA_ARGS__; fprintf(stderr, "done\n"); }
 
 #endif

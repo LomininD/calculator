@@ -2,7 +2,7 @@
 #include "code_reader.h"
 #include "cmd_encoder.h"
 
-const char* output_name =  "program.out"; // ask about it
+const char* output_name =  "program.out"; 
 
 err_t initialise_assembler(int argc, char* argv[], files_info* files, assembler_info* asm_data, debug_info* debug)
 {
@@ -17,6 +17,7 @@ err_t initialise_assembler(int argc, char* argv[], files_info* files, assembler_
     asm_data->str = (char*) calloc(asm_data->len + 1, sizeof(char));
     asm_data->cmd = UNKNOWN;
     asm_data->end = false;
+    asm_data->pos = 0;
 
     debug->current_line = 0;
     debug->got_hlt = false;
@@ -90,6 +91,7 @@ err_t fill_file_preamble(files_info* files)
 
 err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debug)
 {
+
     while (!asm_data->end)
     {
         debug->current_line++;
@@ -99,6 +101,8 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
             break;
 
         debug->not_empty = true;
+
+        printf("current pos in byte_code = %d\n", asm_data->pos);
 
         printf("assembler: got str: %s\n", asm_data->str);
 
@@ -126,8 +130,10 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
 
         if (asm_data->cmd == OUT)
             debug->got_out = true;
+
+        getchar();
     }
-    
+
     return ok;
 }
 

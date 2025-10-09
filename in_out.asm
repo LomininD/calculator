@@ -1,4 +1,5 @@
 IN
-JMP 0
+
+HLT
 
 

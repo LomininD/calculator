@@ -4,89 +4,15 @@
 #include <string.h>
 #include <sys/stat.h>
 
-
-#include "processor_properties.h"
-#include "processor_cmd.h"
-#include "stack/stack.h"
-#include "stack/font_styles.h"
-#include "stack/stack_dump.h"
+#include "processor.h"
 
 // make printf macros for debug
 // stack information and program info in debug file if mode is not debug
-
-err_t open_file(FILE** fp, int argc, char* argv[]);
-err_t proc_ctor(FILE* fp, proc_info* proc);
-err_t prepare_file(FILE* fp, proc_info* proc);
-err_t execute_cmd(proc_info* proc, proc_commands cmd);
-err_t initialise_stack(size_t capacity, st_t* st);
-err_t check_ip(proc_info* proc);
-int is_jmp_type(proc_commands cmd);
-void read_byte_code(FILE* fp, proc_info* proc);
-
 // if function couldn't complete the direct task it prints error message and returns error
 // if function gets error message from other function it redirects it to the
 // function from which was called
 //TODO: split output streams ???
 // refactor stack only in case of splitting streams
-
-int main(int argc, char* argv[])
-{
-    printf(MAKE_BOLD("+++ PROCESSOR +++\n\n"));
-
-    FILE* fp = NULL;
-
-    err_t opened = open_file(&fp, argc, argv);
-
-    if (opened != ok)
-    {
-        printf("main: terminating process due to error\n"); // macros
-    return 0; // macros
-    }
-
-    proc_info proc = {};
-    err_t initialised = proc_ctor(fp, &proc);
-
-    if (initialised != ok)
-    {
-        fclose(fp); // dtor
-        printf("main: terminating process due to error\n"); // macros
-        return 0;
-    }
-
-    read_byte_code(fp, &proc);
-
-    proc_commands current_cmd = UNKNOWN;
-
-    while (proc.ip < proc.prg_size)
-    {
-        current_cmd = (proc_commands) proc.code[proc.ip];
-        err_t executed = execute_cmd(&proc, current_cmd);
-
-        if (executed != ok)
-        {
-            fclose(fp); // dtor
-            printf("main: terminating process due to error\n"); //macros
-            return 0;
-        }
-
-        if (current_cmd == HLT)
-        {
-            fclose(fp); // dtor
-            printf("main: shutting down processor\n");
-            return 0;
-        }
-
-        if (!is_jmp_type(current_cmd))
-            proc.ip++;
-
-        getchar(); // optionally
-    }
-
-    printf("main: forced process termination, no HLT got\n");
-    fclose(fp); // dtor
-    return 0;
-}
-
 
 
 err_t open_file(FILE** fp, int argc, char* argv[])
@@ -118,11 +44,13 @@ void read_byte_code(FILE* fp, proc_info* proc)
     assert(fp != NULL);
     assert(proc != NULL);
 
+    printf("started reading\n");
+
     int cmd = 0;
     int i = 0;
     int scanned = 0;
 
-    while (true) // add read checking (corrupted byte code) and add new fuction
+    while (true)
     {
         scanned = fscanf(fp, "%d", &cmd);
 
@@ -147,7 +75,7 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd) // refactor with struct
     switch (cmd)
     {
         case PUSH:
-            executed = proc_push(&proc->st, proc->code, &proc->ip);
+            executed = proc_push(proc);
             break;
         case PUSHREG:
             executed = proc_pushreg(proc);
@@ -160,17 +88,17 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd) // refactor with struct
         case MULT:
         case DIV:
         case SQRT:
-            executed = proc_calc(&proc->st, cmd);
+            executed = proc_calc(proc, cmd);
             break;
         case IN:
-            executed = proc_in(&proc->st);
+            executed = proc_in(proc);
             break;
         case OUT:
-            executed = proc_out(&proc->st);
+            executed = proc_out(proc);
             break;
 
         case JMP:
-            executed = proc_jmp(&proc->st, proc->code, proc->prg_size, &proc->ip);
+            executed = proc_jmp(proc);
             break;
 
         case JB:
@@ -179,25 +107,18 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd) // refactor with struct
         case JAE:
         case JE:
         case JNE:
-            executed = proc_cond_jmp(&proc->st, proc->code, proc->prg_size, &proc->ip, cmd);
+            executed = proc_cond_jmp(proc, cmd);
             break;
 
         case HLT:
-            executed = proc_hlt(&proc->st);
+            executed = proc_hlt(proc);
             break;
 
         default:
             printf("execute_cmd: unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, proc->ip);
     }
 
-    if (executed == ok)
-    {
-        return ok;
-    }
-    else
-    {
-        return error;
-    }
+    return executed;
 }
 
 
@@ -208,10 +129,8 @@ err_t proc_ctor(FILE* fp, proc_info* proc)
 
     printf("proc_ctor: began initialising processor\n");
 
-    // initialise stack, structure, check version, signature and get prog_size
     size_t capacity = 10;
     err_t initialised = initialise_stack(capacity, &(proc->st));
-
     if (initialised != ok)
         return error;
 
@@ -235,6 +154,28 @@ err_t prepare_file(FILE* fp, proc_info* proc)
     int c = 0;
     int correct_symbols = 0;
 
+    err_t signature_ok = check_file_signature(fp, proc);
+
+    if (signature_ok != ok)
+        return error;
+
+    err_t version_ok = check_file_version(fp, proc);
+
+    if (version_ok != ok)
+        return error;
+
+    return ok;
+}
+
+
+err_t check_file_signature(FILE* fp, proc_info* proc)
+{
+    assert(fp != NULL);
+    assert(proc != NULL);
+
+    int c = 0;
+    int correct_symbols = 0;
+
     fscanf(fp, "%d", &c);
     if (c == 'L')
         correct_symbols++;
@@ -247,27 +188,34 @@ err_t prepare_file(FILE* fp, proc_info* proc)
 
     if (correct_symbols == 3)
     {
-        printf("prepare_file: file signature verified\n");
+        printf("check_file_signature: file signature verified\n");
+        return ok;
     }
     else
     {
-        printf("prepare_file: " MAKE_BOLD_RED("ERROR:") " wrong file signature\n");
+        printf("check_file_signature: " MAKE_BOLD_RED("ERROR:") " wrong file signature\n");
         return error;
     }
+}
+
+
+err_t check_file_version(FILE* fp, proc_info* proc)
+{
+    assert(fp != NULL);
+    assert(proc != NULL);
 
     int file_version = 0;
     fscanf(fp, "%d", &file_version);
     if (file_version == version)
     {
-        printf("prepare_file: assembly version verified\n");
+        printf("check_file_version: assembly version verified\n");
+        return ok;
     }
     else
     {
-        printf("prepare_file: " MAKE_BOLD_RED("ERROR:") " assembly version is old\n");
+        printf("check_file_version: " MAKE_BOLD_RED("ERROR:") " assembly version is old\n");
         return error;
     }
-
-    return ok;
 }
 
 
@@ -290,25 +238,6 @@ err_t initialise_stack(size_t capacity, st_t* st)
 }
 
 
-int is_jmp_type(proc_commands cmd) // refactor
-{
-    switch (cmd)
-    {
-        case JMP:
-        case JB:
-        case JBE:
-        case JA:
-        case JAE:
-        case JE:
-        case JNE:
-            return 1;
-            break;
-        default:
-            return 0;
-            break;
-    };
-}
-
 err_t check_ip(proc_info* proc)
 {
     assert(proc != NULL);
@@ -323,5 +252,15 @@ err_t check_ip(proc_info* proc)
         printf("check_ip: ip value (%zu) is ok\n", proc->ip);
         return ok;
     }
+}
+
+void proc_dtor(FILE* fp, proc_info* proc)
+{
+    assert(fp != NULL);
+    assert(proc != NULL);
+
+    printf("proc_dtor: started termination\n");
+    fclose(fp);
+    printf("proc_dtor: done\n");
 }
 

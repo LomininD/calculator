@@ -39,7 +39,8 @@ int main(int argc, char* argv[])
 
     free(asm_data.str);
     printf("assembler: finished assembly\n");
+
     fclose(files.input_file);
-    fclose(files.output_file);
+
     return 0;
 }

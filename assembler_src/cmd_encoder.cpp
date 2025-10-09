@@ -14,6 +14,8 @@ err_t encode_push(files_info* files, assembler_info* asm_data, debug_info* debug
     int number = 0;
     err_t is_read = read_number_arg(files, asm_data, debug, &number);
 
+    asm_data->pos += 2;
+
     return is_read;
 }
 
@@ -30,6 +32,8 @@ err_t encode_reg_cmd(files_info* files, assembler_info* asm_data, debug_info* de
     int number = 0;
     err_t is_read = read_string_arg(files, asm_data, debug, &number);
 
+    asm_data->pos += 2;
+
     return is_read;
 }
 
@@ -43,6 +47,8 @@ err_t encode_calc_cmd(files_info* files, assembler_info* asm_data, debug_info* d
     fprintf(files->output_file, "%d\n", cmd);
     asm_data->cmd = cmd;
 
+    asm_data->pos += 1;
+
     return ok;
 }
 
@@ -55,6 +61,9 @@ err_t encode_in_out(files_info* files, assembler_info* asm_data, debug_info* deb
 
     fprintf(files->output_file, "%d\n", cmd);
     asm_data->cmd = cmd;
+
+    asm_data->pos += 1;
+
     return ok;
 }
 
@@ -71,6 +80,8 @@ err_t encode_jmp_cmd(files_info* files, assembler_info* asm_data, debug_info* de
     int number = 0;
     err_t is_read = read_number_arg(files, asm_data, debug, &number);
 
+    asm_data->pos += 2;
+
     return is_read;
 }
 
@@ -82,6 +93,9 @@ err_t encode_hlt(files_info* files, assembler_info* asm_data)
 
     fprintf(files->output_file, "%d\n", HLT);
     asm_data->cmd = HLT;
+
+    asm_data->pos += 1;
+
     return ok;
 }
 
