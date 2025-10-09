@@ -1,0 +1,45 @@
+// TODO: test stack!!!
+// TODO: check float types
+// TODO: check verifier for reliability
+// TODO: add canary protection outside array
+
+
+// TODO: print_el
+// TODO: file logs by using fprintf (file, stdout)
+// TODO: multiple error output - binary encoder
+
+// TODO: ask about poisoned data
+
+// TODO: determine the maximum stack size
+// TODO: add more check to st_verify (capacity, size)
+// TODO: read about static variables, where are they stored and how to get access to them
+// TODO: add hash protection
+// TODO: add ability to disable protections
+
+
+// TODO: intrude in a command structure
+
+
+// TODO: read about errno perror
+// TODO: read about stack frame
+
+// TODO: st_history mode
+// TODO: read about long arifmetics
+// TODO: read about data protection (stack)
+// TODO: stack documentation (optionally)
+// TODO: read advanced information about makefile
+// TODO: read about terminal commands
+// TODO: read about unix systems
+// TODO: read kernigan
+// TODO: read how to google, look for source code
+
+// TODO: calculator (print debug messages)
+
+
+QUESTIONS:
+
+why do I need poison values if i have calloc
+reorganize error messages? ctor_error make ctor bold
+move st_dump to stack_err_messages????
+swap error and place from which it happened?
+

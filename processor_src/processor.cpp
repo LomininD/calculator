@@ -290,7 +290,7 @@ err_t initialise_stack(size_t capacity, st_t* st)
 }
 
 
-int is_jmp_type(proc_commands cmd)
+int is_jmp_type(proc_commands cmd) // refactor
 {
     switch (cmd)
     {

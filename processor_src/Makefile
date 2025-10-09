@@ -9,9 +9,9 @@ OBJ = processor.o processor_cmd.o stack/stack.o stack/stack_dump.o stack/min_max
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(FLAGS)
 
-processor: $(OBJ)
+../processor: $(OBJ)
 	$(CC) -o $@ $^ $(FLAGS)
 
 clean:
-	rm -rf *.o processor
-	rm -rf stack/*.o processor
+	rm -rf *.o ../processor stack/*.o
+
