@@ -4,10 +4,6 @@
 #include "processor_cmd.h"
 
 
-static int check_buffer();
-static void clear_buffer(void);
-
-
 err_t proc_push(proc_info* proc)
 {
     assert(proc != NULL);
@@ -31,38 +27,6 @@ err_t proc_push(proc_info* proc)
 }
 
 
-err_t proc_pushreg(proc_info* proc)
-{
-    assert(proc != NULL);
-
-    printf("execute_cmd: began pushreg\n");
-
-    int reg = proc->code[++proc->ip];
-
-    if (reg < 0 || reg >= register_amount)
-    {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " PUSHREG failed (got non-existent register index %d)\n", reg);
-        return error;
-    }
-
-    int number = 0;
-    st_return_err got_number = st_pop(&proc->st, &number);
-
-    if (got_number != no_error)
-    {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " PUSHREG failed (not enough data in stack)\n");
-        return error;
-    }
-
-    proc->registers[reg] = number;
-    printf("execute_cmd: PUSHREG succeeded\n");
-    st_dump(&proc->st);
-    proc->ip++;
-
-    return ok;
-}
-
-
 err_t proc_popreg(proc_info* proc)
 {
     assert(proc != NULL);
@@ -73,7 +37,39 @@ err_t proc_popreg(proc_info* proc)
 
     if (reg < 0 || reg >= register_amount)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " POPREG failed (got non-existent register index %d)\n", reg);
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " popreg failed (got non-existent register index %d)\n", reg);
+        return error;
+    }
+
+    int number = 0;
+    st_return_err got_number = st_pop(&proc->st, &number);
+
+    if (got_number != no_error)
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " popreg failed (not enough data in stack)\n");
+        return error;
+    }
+
+    proc->registers[reg] = number;
+    printf("execute_cmd: popreg succeeded\n");
+    st_dump(&proc->st);
+    proc->ip++;
+
+    return ok;
+}
+
+
+err_t proc_pushreg(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    printf("execute_cmd: began pushreg\n");
+
+    int reg = proc->code[++proc->ip];
+
+    if (reg < 0 || reg >= register_amount)
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " pushreg failed (got non-existent register index %d)\n", reg);
         return error;
     }
 
@@ -81,11 +77,11 @@ err_t proc_popreg(proc_info* proc)
 
     if (pushed != no_error)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " POPREG failed (could not push data to stack)\n");
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " pushreg failed (could not push data to stack)\n");
         return error;
     }
 
-    printf("execute_cmd: POPREG succeeded\n");
+    printf("execute_cmd: pushreg succeeded\n");
     st_dump(&proc->st);
     proc->ip++;
 
@@ -217,13 +213,11 @@ err_t get_number(int* number) // refactor
     fgets(str_number, 11, stdin);
     int scanned = sscanf(str_number, "%d%s", number, bad_symbols);
 
-    if (str_number[9] != '\0')
+    if (str_number[9] != '\0' && str_number[9] != '\n') // 999999999 is not working EOF \n
     {
         printf("get_number: " MAKE_BOLD_RED("ERROR:") " number is too big\n");
         return error;
     }
-
-    printf("scanned els % d\n", scanned);
 
     if (scanned != 1)
     {
@@ -231,7 +225,6 @@ err_t get_number(int* number) // refactor
         return error;
     }
 
-    clear_buffer();
     printf("get_number: scanned number  = %d\n", * number);
     return ok;
 }
@@ -413,23 +406,3 @@ const char* decode_cmd (proc_commands cmd)
             break;
     }
 }
-
-
-static int check_buffer()
-{
-    int c = 0;
-    while ((c = getchar()) != EOF && c != '\n')
-        if (c != ' ' && c != '\n' && c != '\t')
-            return 0;
-    return 1;
-}
-
-
-static void clear_buffer(void)
-{
-    int c = '\0';
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
-
-
