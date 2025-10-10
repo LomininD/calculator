@@ -11,6 +11,7 @@ err_t proc_pushreg(proc_info* proc);
 err_t proc_popreg(proc_info* proc);
 err_t proc_calc(proc_info* proc, proc_commands cmd);
 err_t proc_in(proc_info* proc);
+err_t get_number(int* number);
 err_t proc_out(proc_info* proc);
 err_t proc_jmp(proc_info* proc);
 err_t proc_cond_jmp(proc_info* proc, proc_commands cmd);

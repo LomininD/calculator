@@ -182,17 +182,17 @@ err_t proc_in(proc_info* proc)
 
     printf("execute_cmd: began in\n");
 
-    int inp = 0;
-    int scanned = scanf("%d", &inp);
-    printf("scanned number  = %d\n", inp);
-    if (scanned != 1 || !check_buffer()) // -1 if big numbers
+    int number = 0;
+
+    err_t got_number = get_number(&number);
+
+    if (got_number != ok) // -1 if big numbers
     {
-        clear_buffer();
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " in failed (could not get value from input stream)\n");
+        printf("execute_cmd: in failed\n");
         return error;
     }
 
-    st_return_err pushed = st_push(&proc->st, inp);
+    st_return_err pushed = st_push(&proc->st, number);
 
     if (pushed == no_error)
     {
@@ -206,6 +206,34 @@ err_t proc_in(proc_info* proc)
         printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " in failed (could not push read value to stack)\n");
         return error;
     }
+}
+
+
+err_t get_number(int* number) // refactor
+{
+    char str_number[11] = {};
+    // maximum number len is 9 symbols 10 symbols are read to check if number is overflowed
+    char bad_symbols[11] = {};
+    fgets(str_number, 11, stdin);
+    int scanned = sscanf(str_number, "%d%s", number, bad_symbols);
+
+    if (str_number[9] != '\0')
+    {
+        printf("get_number: " MAKE_BOLD_RED("ERROR:") " number is too big\n");
+        return error;
+    }
+
+    printf("scanned els % d\n", scanned);
+
+    if (scanned != 1)
+    {
+        printf("get_number: " MAKE_BOLD_RED("ERROR:") " the input value is not a number\n");
+        return error;
+    }
+
+    clear_buffer();
+    printf("get_number: scanned number  = %d\n", * number);
+    return ok;
 }
 
 
