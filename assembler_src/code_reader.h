@@ -10,8 +10,10 @@
 #include "assembler_properties.h"
 
 
-err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number);
-err_t read_string_arg(files_info* files, assembler_info* asm_data, debug_info* debug, int* number);
+err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* debug);
+err_t read_string_arg(files_info* files, assembler_info* asm_data, debug_info* debug);
+err_t read_label(files_info* files, assembler_info* asm_data, debug_info* debug);
+err_t replace_label(files_info* files, assembler_info* asm_data, debug_info* debug);
 int decode_reg_name(char* arg);
 void readline(assembler_info* asm_data, files_info* file);
 

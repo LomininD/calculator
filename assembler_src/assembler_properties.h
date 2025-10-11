@@ -6,6 +6,14 @@
 
 // extern const char* output_name =  "program.out";
 
+const int max_labels_number = 10;
+
+enum writing_mode
+{
+    writing_off,
+    writing_on
+};
+
 struct files_info
 {
     char* input_file_name;
@@ -20,6 +28,8 @@ struct assembler_info
     char* str;
     char raw_cmd[32];
     proc_commands cmd;
+    int labels[max_labels_number];
+    writing_mode mode;
     bool end;
     int pos;
 };

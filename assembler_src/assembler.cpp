@@ -2,7 +2,7 @@
 #include "code_reader.h"
 #include "cmd_encoder.h"
 
-const char* output_name =  "program.out"; 
+const char* output_name =  "program.out";
 
 err_t initialise_assembler(int argc, char* argv[], files_info* files, assembler_info* asm_data, debug_info* debug)
 {
@@ -18,6 +18,10 @@ err_t initialise_assembler(int argc, char* argv[], files_info* files, assembler_
     asm_data->cmd = UNKNOWN;
     asm_data->end = false;
     asm_data->pos = 0;
+    asm_data->mode = writing_off;
+
+    for(int i = 0; i < max_labels_number; i++)
+        asm_data->labels[i] = -1;
 
     debug->current_line = 0;
     debug->got_hlt = false;
@@ -75,7 +79,7 @@ err_t get_files_data(int argc, char* argv[], files_info* files)
 }
 
 
-err_t fill_file_preamble(files_info* files)
+err_t fill_file_preamble(files_info* files, int pos)
 {
     assert(files != NULL);
 
@@ -85,12 +89,21 @@ err_t fill_file_preamble(files_info* files)
 
     fprintf(files->output_file, "%d\n", version);
 
+    //fprintf(files->output_file, "%d\n", program_size);
+
     return ok;
 }
 
 
 err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debug)
 {
+    assert(files != NULL);
+    assert(asm_data != NULL);
+    assert(debug != NULL);
+
+    asm_data->pos = 0;
+    asm_data->end = 0;
+    asm_data->mode = writing_on;
 
     while (!asm_data->end)
     {
@@ -125,7 +138,6 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
         if (asm_data->cmd == HLT)
         {
             debug->got_hlt = true;
-            break;
         }
 
         if (asm_data->cmd == OUT)
@@ -133,12 +145,55 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
 
         getchar();
     }
-
     return ok;
 }
 
 
-err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* debug) // split into fuctions
+err_t preliminary_process_code(files_info* files, assembler_info* asm_data, debug_info* debug)
+{
+    assert(files != NULL);
+    assert(asm_data != NULL);
+    assert(debug != NULL);
+
+    asm_data->mode = writing_off;
+
+    while (!asm_data->end)
+    {
+        debug->current_line++;
+        readline(asm_data, files);
+
+        if (asm_data->end)
+            break;
+
+        int scanned = sscanf(asm_data->str, "%31s", asm_data->raw_cmd);
+        if (scanned == -1)
+        {
+            printf("\n");
+            continue;
+        }
+
+        err_t recognized = determine_cmd(files, asm_data, debug);
+
+        if (recognized != ok)
+            return error;
+    }
+    return ok;
+}
+
+
+void output_labels(assembler_info* asm_data)
+{
+    assert(asm_data != NULL);
+    printf("labels data:\n");
+
+    for (int i = 0; i < max_labels_number; i++)
+        printf("%d: %d\n", i, asm_data->labels[i]);
+
+    printf("\n");
+}
+
+
+err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* debug) // refactor this piece of shit
 {
     assert(files != NULL);
     assert(asm_data != NULL);
@@ -229,6 +284,11 @@ err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* deb
     {
         printf("determine_cmd: recognized jne\n");
         return encode_jmp_cmd(files, asm_data, debug, JNE);
+    }
+    else if (asm_data->raw_cmd[0] == ':')
+    {
+        printf("determine_cmd: recognized label\n");
+        return read_label(files, asm_data, debug);
     }
     else if (strcmp("HLT", asm_data->raw_cmd) == 0)
     {

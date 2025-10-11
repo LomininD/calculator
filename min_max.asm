@@ -1,31 +1,33 @@
 IN              ; begin input
-PUSHREG AX
-IN
-PUSHREG BX
-IN
-PUSHREG CX      ; done input
-
 POPREG AX
+IN
 POPREG BX
-POPREG CX
+IN
+POPREG CX      ; done input
 
-JA 26           ; if B > C
-POPREG CX       ; C >= B
-JA 35           ; if A > C
-POPREG CX       ; C >= A
-OUT             ; prints c
-JMP 38
+PUSHREG AX
+PUSHREG BX
+PUSHREG CX
+JA :0           ; if B > C
 
-POPREG BX       ; if B > C jump here
-JA 315          ; if A > B
-POPREG BX       ; B > A
+PUSHREG CX
+JA :1           ; if A > C
+
+PUSHREG CX
 OUT
-JMP 38
+HLT
 
-POPREG AX       ; if A > B jump here
+:0
+PUSHREG BX
+JA :1           ; if A > B
+
+PUSHREG BX
 OUT
+HLT
 
-
+:1
+PUSHREG AX
+OUT
 HLT
 
 

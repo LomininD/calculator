@@ -8,11 +8,14 @@ err_t encode_push(files_info* files, assembler_info* asm_data, debug_info* debug
     assert(asm_data != NULL);
     assert(debug != NULL);
 
-    fprintf(files->output_file, "%d\n", PUSH);
-    asm_data->cmd = PUSH;
+    err_t is_read = ok;
 
-    int number = 0;
-    err_t is_read = read_number_arg(files, asm_data, debug, &number);
+    if (asm_data->mode == writing_on)
+    {
+        fprintf(files->output_file, "%d\n", PUSH);
+        asm_data->cmd = PUSH;
+        is_read = read_number_arg(files, asm_data, debug);
+    }
 
     asm_data->pos += 2;
 
@@ -26,11 +29,14 @@ err_t encode_reg_cmd(files_info* files, assembler_info* asm_data, debug_info* de
     assert(asm_data != NULL);
     assert(debug != NULL);
 
-    fprintf(files->output_file, "%d\n", cmd);
-    asm_data->cmd = cmd;
+    err_t is_read = ok;
 
-    int number = 0;
-    err_t is_read = read_string_arg(files, asm_data, debug, &number);
+    if (asm_data->mode == writing_on)
+    {
+        fprintf(files->output_file, "%d\n", cmd);
+        asm_data->cmd = cmd;
+        is_read = read_string_arg(files, asm_data, debug);
+    }
 
     asm_data->pos += 2;
 
@@ -44,8 +50,11 @@ err_t encode_calc_cmd(files_info* files, assembler_info* asm_data, debug_info* d
     assert(asm_data != NULL);
     assert(debug != NULL);
 
-    fprintf(files->output_file, "%d\n", cmd);
-    asm_data->cmd = cmd;
+    if (asm_data->mode == writing_on)
+    {
+        fprintf(files->output_file, "%d\n", cmd);
+        asm_data->cmd = cmd;
+    }
 
     asm_data->pos += 1;
 
@@ -59,8 +68,11 @@ err_t encode_in_out(files_info* files, assembler_info* asm_data, debug_info* deb
     assert(asm_data != NULL);
     assert(debug != NULL);
 
-    fprintf(files->output_file, "%d\n", cmd);
-    asm_data->cmd = cmd;
+    if (asm_data->mode == writing_on)
+    {
+        fprintf(files->output_file, "%d\n", cmd);
+        asm_data->cmd = cmd;
+    }
 
     asm_data->pos += 1;
 
@@ -74,11 +86,14 @@ err_t encode_jmp_cmd(files_info* files, assembler_info* asm_data, debug_info* de
     assert(asm_data != NULL);
     assert(debug != NULL);
 
-    fprintf(files->output_file, "%d\n", cmd);
-    asm_data->cmd = cmd;
+    err_t is_read = ok;
 
-    int number = 0;
-    err_t is_read = read_number_arg(files, asm_data, debug, &number);
+    if (asm_data->mode == writing_on)
+    {
+        fprintf(files->output_file, "%d\n", cmd);
+        asm_data->cmd = cmd;
+        is_read = read_number_arg(files, asm_data, debug);
+    }
 
     asm_data->pos += 2;
 
@@ -91,8 +106,11 @@ err_t encode_hlt(files_info* files, assembler_info* asm_data)
     assert(files != NULL);
     assert(asm_data != NULL);
 
-    fprintf(files->output_file, "%d\n", HLT);
-    asm_data->cmd = HLT;
+    if (asm_data->mode == writing_on)
+    {
+        fprintf(files->output_file, "%d\n", HLT);
+        asm_data->cmd = HLT;
+    }
 
     asm_data->pos += 1;
 
