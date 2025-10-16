@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "../processor_src/processor_properties.h"
+#include "debug.h"
 
 // extern const char* output_name =  "program.out";
 
@@ -27,11 +28,12 @@ struct assembler_info
     size_t len;
     char* str;
     char raw_cmd[32];
-    proc_commands cmd;
     int labels[max_labels_number];
-    writing_mode mode;
-    bool end;
     int pos;
+    bool end;
+    proc_commands cmd;
+    writing_mode w_mode;
+    db_mode debug_mode;
 };
 
 struct debug_info
