@@ -39,7 +39,7 @@ err_t open_file(FILE** fp, int argc, char* argv[])
 }
 
 
-void read_byte_code(FILE* fp, proc_info* proc)
+err_t read_byte_code(FILE* fp, proc_info* proc)
 {
     assert(fp != NULL);
     assert(proc != NULL);
@@ -57,12 +57,20 @@ void read_byte_code(FILE* fp, proc_info* proc)
         if (scanned == -1)
             break;
 
+        if (i == max_byte_code_len)
+        {
+            printf("read_code: max byte code len exceeded\n");
+            return error;
+        }
+
         //printf("scanned_cmd: %d\n", cmd);
         proc->prg_size++;
         proc->code[i] = cmd;
         i++;
     }
+
     //printf("prg_size: %zu\n", prg_size);
+    return ok;
 }
 
 
@@ -108,10 +116,6 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd) // refactor with struct
         case JE:
         case JNE:
             executed = proc_cond_jmp(proc, cmd);
-            break;
-
-        case HLT:
-            executed = proc_hlt(proc);
             break;
 
         default:
@@ -254,13 +258,28 @@ err_t check_ip(proc_info* proc)
     }
 }
 
-void proc_dtor(FILE* fp, proc_info* proc)
+
+err_t proc_dtor(FILE* fp, proc_info* proc)
 {
     assert(fp != NULL);
     assert(proc != NULL);
 
     printf("proc_dtor: started termination\n");
+
+    st_return_err terminated = st_dtor(&proc->st);
+
+    if (terminated == no_error)
+    {
+        printf("proc_dtor: stack destroyed\n");
+    }
+    else
+    {
+        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " hlt failed\n");
+        return error;
+    }
+
     fclose(fp);
     printf("proc_dtor: done\n");
+    return ok;
 }
 

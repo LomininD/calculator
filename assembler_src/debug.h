@@ -42,15 +42,15 @@ while(0)
 while(0)
 
 
-#define printf_err(mode, called_place, err_text, ...) do{                     \
+#define printf_err(mode, ...) do{                     \
     printf_empty_line(mode);                                                  \
-    printf(called_place MAKE_BOLD_RED(" ERROR: ") err_text, __VA_ARGS__);     \
+    printf(MAKE_BOLD_RED("ERROR: ") __VA_ARGS__);     \
 }                                                                             \
 while(0)
 
-#define printf_warn(mode, called_place, warn_text, ...) do{                 \
+#define printf_warn(mode, ...) do{                 \
     printf_empty_line(mode);                                                \
-    printf(called_place MAKE_BOLD(" WARNING: ") warn_text, __VA_ARGS__);    \
+    printf(MAKE_BOLD("WARNING: ") __VA_ARGS__);    \
 }                                                                           \
 while(0)
 
@@ -59,9 +59,9 @@ while(0)
 }                                                  \
 while(0)
 
-#define printf_abortion(mode, called_place, err_text) do{   \
+#define printf_abortion(mode, ...) do{   \
     printf_empty_line(mode);                                \
-    printf(called_place " " MAKE_BOLD_RED(err_text));       \
+    printf(MAKE_BOLD_RED("aborting due to error: ") __VA_ARGS__);       \
 }                                                           \
 while(0)
 

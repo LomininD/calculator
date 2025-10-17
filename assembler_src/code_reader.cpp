@@ -67,7 +67,7 @@ err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* d
         else
         {
             //printf_empty_line(debug_mode);
-            printf_err(debug_mode, "read_number_arg: %s:%d:", "failed to get number\n", files->input_file_name, debug->current_line);
+            printf_err(debug_mode, "[%s:%d] -> read_number_arg: failed to get number\n", files->input_file_name, debug->current_line);
             return error;
         }
     }
@@ -100,7 +100,7 @@ err_t read_string_arg(files_info* files, assembler_info* asm_data, debug_info* d
     else
     {
         //printf_empty_line(debug_mode);
-        printf_err(debug_mode, "read_string_arg: %s:%d:", "failed to get arg\n", files->input_file_name, debug->current_line);
+        printf_err(debug_mode, "[%s:%d] -> read_string_arg: failed to get arg\n", files->input_file_name, debug->current_line);
         return error;
     }
 }
@@ -127,7 +127,7 @@ err_t read_label(files_info* files, assembler_info* asm_data, debug_info* debug)
 
         if (number < 0 || number >= max_labels_number)
         {
-            printf_err(debug_mode, "read_label: %s:%d:", "wrong label number\n", files->input_file_name, debug->current_line);
+            printf_err(debug_mode, "[%s:%d] -> read_label: wrong label number\n", files->input_file_name, debug->current_line);
             return error;
         }
 
@@ -138,7 +138,7 @@ err_t read_label(files_info* files, assembler_info* asm_data, debug_info* debug)
     else
     {
         //printf_empty_line(debug_mode);
-        printf_err(debug_mode, "read_label: %s:%d:", "failed to get label\n", files->input_file_name, debug->current_line);
+        printf_err(debug_mode, "[%s:%d] -> read_label: failed to get label\n", files->input_file_name, debug->current_line);
         return error;
     }
 }
@@ -166,14 +166,14 @@ err_t replace_label(files_info* files, assembler_info* asm_data, debug_info* deb
 
         if (number < 0 || number >= max_labels_number)
         {
-            printf_err(debug_mode, "replace_label: %s:%d:", "wrong label number\n", files->input_file_name, debug->current_line);
+            printf_err(debug_mode, "[%s:%d] -> replace_label: wrong label number\n", files->input_file_name, debug->current_line);
             return error;
         }
 
         int address = asm_data->labels[number];
         if (address == -1)
         {
-            printf_err(debug_mode, "replace_label: %s:%d:", "uninitialized label (%d)\n", files->input_file_name, debug->current_line, number);
+            printf_err(debug_mode, "[%s:%d] -> replace_label: uninitialized label (%d)\n", files->input_file_name, debug->current_line, number);
             return error;
         }
 
@@ -184,7 +184,7 @@ err_t replace_label(files_info* files, assembler_info* asm_data, debug_info* deb
     else
     {
         //printf_empty_line(debug_mode);
-        printf_err(debug_mode, "replace_label: %s:%d:", "failed to get label\n", files->input_file_name, debug->current_line);
+        printf_err(debug_mode, "[%s:%d] -> replace_label: failed to get label\n", files->input_file_name, debug->current_line);
         return error;
     }
 }

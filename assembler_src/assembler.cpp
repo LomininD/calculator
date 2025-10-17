@@ -337,7 +337,7 @@ err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* deb
     }
 
     printf_log_msg(debug_mode, "\n", NULL);
-    printf_err(debug_mode, "determine_cmd: %s:%d:", "invalid command (%s)\n", files->input_file_name, debug->current_line, asm_data->raw_cmd);
+    printf_err(debug_mode, "[%s:%d] -> determine_cmd: invalid command (%s)\n", files->input_file_name, debug->current_line, asm_data->raw_cmd);
     asm_data->cmd = UNKNOWN;
     return error;
 }
@@ -354,15 +354,15 @@ void check_warnings(debug_info* debug, files_info* files, assembler_info* asm_da
     {
         if (!debug->got_out)
         {
-            printf_warn(debug_mode, "assembler: %s:%d:", "calculations seem to have no effect\n", files->input_file_name, debug->current_line);
+            printf_warn(debug_mode, "[%s:%d:] -> assembler: calculations seem to have no effect\n", files->input_file_name, debug->current_line);
             printf_note(debug_mode, "Note: you may forgot OUT instruction in your code\n", NULL);
         }
 
         if (!debug->got_hlt)
-            printf_warn(debug_mode, "assembler: %s:%d:", "no HLT instruction in the end of the program\n", files->input_file_name, debug->current_line);
+            printf_warn(debug_mode, "[%s:%d:] -> assembler: no HLT instruction in the end of the program\n", files->input_file_name, debug->current_line);
     }
     else
     {
-        printf_warn(debug_mode, "assembler: ", " got blank file\n", NULL);
+        printf_warn(debug_mode, "assembler: got blank file\n", NULL);
     }
 }

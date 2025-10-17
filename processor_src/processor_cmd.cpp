@@ -342,28 +342,6 @@ bool check_condition(proc_commands cmd, int a, int b)
 }
 
 
-err_t proc_hlt(proc_info* proc)
-{
-    assert(proc != NULL);
-
-    printf("execute_cmd: began hlt\n");
-
-    st_return_err terminated = st_dtor(&proc->st);
-
-    if (terminated == no_error)
-    {
-        printf("execute_cmd: stack destroyed, hlt succeeded\n");
-        proc->ip++;
-        return ok;
-    }
-    else
-    {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " hlt failed\n");
-        return error;
-    }
-}
-
-
 const char* decode_cmd (proc_commands cmd)
 {
     switch (cmd)

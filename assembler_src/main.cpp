@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     err_t initialised = initialise_assembler(argc, argv, &asm_data, &debug);
     if (initialised != ok)
     {
-        printf_abortion(asm_data.debug_mode, "assembler:", "aborting due to error\n");
+        printf_abortion(asm_data.debug_mode, "assembler\n");
         return 0;
     }
 
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 
     if (processed != ok)
     {
-        printf_abortion(asm_data.debug_mode, "assembler:", "aborting due to error\n");
+        printf_abortion(asm_data.debug_mode, "assembler\n");
         return 0;
     }
     printf_log_msg(asm_data.debug_mode, "assembler: preliminary compilation finished\n", NULL);
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 
     if (processed != ok)
     {
-        printf_abortion(asm_data.debug_mode, "assembler:", "aborting due to error\n"); // macros
+        printf_abortion(asm_data.debug_mode, "assembler\n");
         return 0;
     }
 

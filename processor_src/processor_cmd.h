@@ -16,6 +16,5 @@ err_t proc_out(proc_info* proc);
 err_t proc_jmp(proc_info* proc);
 err_t proc_cond_jmp(proc_info* proc, proc_commands cmd);
 bool check_condition(proc_commands cmd, int a, int b);
-err_t proc_hlt(proc_info* proc);
 
 #endif
