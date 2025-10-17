@@ -53,7 +53,8 @@ err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* d
     if (success == 1)
     {
         printf_log_msg(debug_mode, "read_number_arg: recognised number %d\n", number);
-        fprintf(files->output_file, "%d\n", number);
+        asm_data->code[asm_data->pos + preamble_size] = number;
+        asm_data->pos++;
         return ok;
     }
     else
@@ -94,7 +95,8 @@ err_t read_string_arg(files_info* files, assembler_info* asm_data, debug_info* d
         number = decode_reg_name(arg);
 
         printf_log_msg(debug_mode, "read_string_arg: got register index: %d\n", number);
-        fprintf(files->output_file, "%d\n", number);
+        asm_data->code[asm_data->pos + preamble_size] = number;
+        asm_data->pos++;
         return ok;
     }
     else
@@ -171,13 +173,9 @@ err_t replace_label(files_info* files, assembler_info* asm_data, debug_info* deb
         }
 
         int address = asm_data->labels[number];
-        if (address == -1)
-        {
-            printf_err(debug_mode, "[%s:%d] -> replace_label: uninitialized label (%d)\n", files->input_file_name, debug->current_line, number);
-            return error;
-        }
 
-        fprintf(files->output_file, "%d\n", address);
+        asm_data->code[asm_data->pos + preamble_size] = address;
+        asm_data->pos++;
 
         return ok;
     }

@@ -37,6 +37,11 @@ err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_
                 {
                     file_determined = true;
                 }
+                else if (argv[i][ind] == 'h')
+                {
+                    launch_help();
+                    return help;
+                }
                 else
                 {
                     printf(MAKE_BOLD_RED("ERROR:") " wrong command line argument\n");
@@ -74,23 +79,27 @@ err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_
     return ok;
 }
 
-// refactor function
-err_t initialise_assembler(int argc, char* argv[], assembler_info* asm_data, debug_info* debug)
+void launch_help(void)
 {
-    assert(argv != NULL);
+    printf("-d: debug mode\n");
+    printf("-o: add output file name after flags\n");
+}
+
+// refactor function
+err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
+{
     assert(asm_data != NULL);
     assert(debug != NULL);
 
     db_mode debug_mode = asm_data->debug_mode;
 
-    printf_log_msg(debug_mode, "initialise_assembler: began initialising\n", NULL);
+    printf_log_msg(debug_mode, "asm_ctor: began initialising\n", NULL);
 
     asm_data->len = 50;
     asm_data->str = (char*) calloc(asm_data->len + 1, sizeof(char));
     asm_data->cmd = UNKNOWN;
     asm_data->end = false;
     asm_data->pos = 0;
-    asm_data->w_mode = writing_off;
 
     for(int i = 0; i < max_labels_number; i++)
         asm_data->labels[i] = -1;
@@ -100,26 +109,37 @@ err_t initialise_assembler(int argc, char* argv[], assembler_info* asm_data, deb
     debug->got_out = false;
     debug->not_empty = false;
 
-    printf_log_msg(debug_mode, "initialise_assembler: finished initialising\n", NULL);
+    printf_log_msg(debug_mode, "asm_ctor: finished initialising\n", NULL);
     return ok;
 }
 
 
-err_t fill_file_preamble(files_info* files, int pos)
+err_t fill_file_preamble(assembler_info* asm_data)
 {
-    assert(files != NULL);
+    assert(asm_data != NULL);
 
-    fprintf(files->output_file, "%d\n", 'L');
-    fprintf(files->output_file, "%d\n", 'M');
-    fprintf(files->output_file, "%d\n", 'D');
+    asm_data->code[0] = 'L';
+    asm_data->code[1] = 'M';
+    asm_data->code[2] = 'D';
+    asm_data->code[3] = version;
+    asm_data->code[4] = asm_data->pos;
 
-    fprintf(files->output_file, "%d\n", version);
-
-    //fprintf(files->output_file, "%d\n", program_size);
+    // if changed update preamble_size in assembler_properties.h
 
     return ok;
 }
 
+void reset_data(assembler_info* asm_data, int* current_line, FILE* input_file)
+{
+    assert(asm_data != NULL);
+    assert(current_line != NULL);
+    assert(input_file != NULL);
+
+    asm_data->pos = 0;
+    *current_line = 0;
+    asm_data->end = 0;
+    rewind(input_file);
+}
 
 err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debug)
 {
@@ -128,11 +148,6 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
     assert(debug != NULL);
 
     db_mode debug_mode = asm_data->debug_mode;
-
-    asm_data->pos = 0;
-    debug->current_line = 0;
-    asm_data->end = 0;
-    asm_data->w_mode = writing_on;
 
     while (!asm_data->end)
     {
@@ -162,6 +177,12 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
         if (recognized != ok)
             return error;
 
+        if (asm_data->cmd == HLT)
+            debug->got_hlt = true;
+
+        if (asm_data->cmd == OUT)
+            debug->got_out = true;
+
         printf_log_msg(debug_mode, "\n", NULL);
 
         if (debug_mode == on)
@@ -170,54 +191,10 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
     return ok;
 }
 
-// combine and add buffer
 
-err_t preliminary_process_code(files_info* files, assembler_info* asm_data, debug_info* debug)
+void output_labels(int* labels, db_mode debug_mode)
 {
-    assert(files != NULL);
-    assert(asm_data != NULL);
-    assert(debug != NULL);
-
-    db_mode debug_mode = asm_data->debug_mode;
-
-    printf_log_msg(debug_mode, "\n", NULL);
-
-    asm_data->w_mode = writing_off;
-
-    while (!asm_data->end)
-    {
-        debug->current_line++;
-        readline(asm_data, files);
-
-        if (asm_data->end)
-            break;
-
-        int scanned = sscanf(asm_data->str, "%31s", asm_data->raw_cmd);
-        if (scanned == -1)
-        {
-            continue;
-        }
-
-        err_t recognized = determine_cmd(files, asm_data, debug);
-
-        if (recognized != ok)
-            return error;
-
-        if (asm_data->cmd == HLT)
-            debug->got_hlt = true;
-
-        if (asm_data->cmd == OUT)
-            debug->got_out = true;
-    }
-
-    printf_log_msg(debug_mode, "\n", NULL);
-    return ok;
-}
-
-
-void output_labels(assembler_info* asm_data)
-{
-    assert(asm_data != NULL);
+    assert(labels != NULL);
 
     db_mode debug_mode = asm_data->debug_mode;
 
@@ -364,5 +341,25 @@ void check_warnings(debug_info* debug, files_info* files, assembler_info* asm_da
     else
     {
         printf_warn(debug_mode, "assembler: got blank file\n", NULL);
+    }
+}
+
+
+void output_code(FILE* fp, int* code, int pos, db_mode debug_mode) // do output in file
+{
+    assert(code != NULL);
+
+    if (debug_mode == on)
+    {
+        for (int i = 0; i < pos + preamble_size; ++i)
+        {
+            printf_log_msg(debug_mode, "%d ", code[i]);
+        }
+        printf_log_msg(debug_mode, "\n");
+    }
+
+    for (int i = 0; i < pos + preamble_size; ++i)
+    {
+        fprintf(fp, "%d\n", code[i]);
     }
 }

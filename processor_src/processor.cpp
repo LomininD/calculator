@@ -168,6 +168,9 @@ err_t prepare_file(FILE* fp, proc_info* proc)
     if (version_ok != ok)
         return error;
 
+    int prg_size = 0;
+    fscanf(fp, "%d", &prg_size);
+
     return ok;
 }
 
@@ -237,7 +240,7 @@ err_t initialise_stack(size_t capacity, st_t* st)
     else
     {
         printf("initialise_stack: problem occurred while creating stack\n");
-        return stack_error;
+        return error;
     }
 }
 

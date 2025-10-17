@@ -13,13 +13,15 @@
 // errors and introductory information in console (always)
 
 err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_data);
-err_t initialise_assembler(int argc, char* argv[], assembler_info* asm_data, debug_info* debug);
-err_t fill_file_preamble(files_info* files, int pos);
+void launch_help(void);
+void reset_data(assembler_info* asm_data, int* current_line, FILE* input_file);
+err_t asm_ctor(assembler_info* asm_data, debug_info* debug);
+err_t fill_file_preamble(assembler_info* asm_data);
 err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debug);
-err_t preliminary_process_code(files_info* files, assembler_info* asm_data, debug_info* debug);
 void output_labels(assembler_info* asm_data);
 err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* debug);
 void check_warnings(debug_info* debug, files_info* files, assembler_info* asm_data);
+void output_code(FILE* fp, int* code, int pos, db_mode debug_mode);
 
 
 #endif

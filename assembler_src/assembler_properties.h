@@ -5,9 +5,8 @@
 #include "../processor_src/processor_properties.h"
 #include "debug.h"
 
-// extern const char* output_name =  "program.out";
-
 const int max_labels_number = 10;
+const int preamble_size = 5;
 
 enum writing_mode
 {
@@ -31,8 +30,8 @@ struct assembler_info
     int labels[max_labels_number];
     int pos;
     bool end;
+    int code[max_byte_code_len];
     proc_commands cmd;
-    writing_mode w_mode;
     db_mode debug_mode;
 };
 

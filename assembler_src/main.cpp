@@ -17,22 +17,21 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    err_t initialised = initialise_assembler(argc, argv, &asm_data, &debug);
+    err_t initialised = asm_ctor(&asm_data, &debug);
     if (initialised != ok)
     {
         printf_abortion(asm_data.debug_mode, "assembler\n");
         return 0;
     }
 
-    printf_gen_info(asm_data.debug_mode, MAKE_BOLD("+++ ASSEMBLER +++\n\n"), NULL); // ask
-    printf_gen_info(asm_data.debug_mode, "version: %d\n", version);
-    printf_gen_info(asm_data.debug_mode, "designed by LMD (c) \n\n", NULL); // va_args
+    printf(MAKE_BOLD("+++ ASSEMBLER +++\n\n"), NULL);
+    printf("version: %d\n", version);
+    printf("designed by LMD (c) \n\n", NULL);
 
     printf_log_msg(asm_data.debug_mode, "assembler: began assembly\n\n", NULL);
     printf_log_msg(asm_data.debug_mode, "assembler: preliminary compilation began\n", NULL);
 
-    err_t processed = preliminary_process_code(&files, &asm_data, &debug);
-
+    err_t processed = process_code(&files, &asm_data, &debug);
     if (processed != ok)
     {
         printf_abortion(asm_data.debug_mode, "assembler\n");
@@ -44,12 +43,11 @@ int main(int argc, char* argv[])
         output_labels(&asm_data);
 
     printf_log_msg(asm_data.debug_mode, "assembler: final compilation began\n", NULL);
-
-    rewind(files.input_file);
-    fill_file_preamble(&files, asm_data.pos);
+    
+    fill_file_preamble(&asm_data);
+    reset_data(&asm_data, &debug.current_line, files.input_file);
 
     process_code(&files, &asm_data, &debug);
-
     if (processed != ok)
     {
         printf_abortion(asm_data.debug_mode, "assembler\n");
@@ -60,9 +58,10 @@ int main(int argc, char* argv[])
 
     check_warnings(&debug, &files, &asm_data);
 
-    free(asm_data.str);
+    free(asm_data.str); // dtor
     fclose(files.input_file);
     //printf_empty_line(debug_mode);
-    printf_gen_info(asm_data.debug_mode, "assembler: finished assembly\n", NULL);
+    output_code(files.output_file, asm_data.code, asm_data.pos, asm_data.debug_mode);
+    printf("assembler: finished assembly\n", NULL);
     return 0;
 }

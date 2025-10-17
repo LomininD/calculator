@@ -9,7 +9,7 @@ enum db_mode
 
 // error messages in console always, but in debug mode also add in log file,
 // msg only in debug mode in console and log file
-// general info in console always in debug also in log
+// general info only in console
 
 // REFACTOR in one define with VA_ARGS
 // reorder error message
@@ -28,15 +28,10 @@ enum db_mode
 }                                    \
 while(0)
 
-#define printf_gen_info(mode, text, ...) do{     \
-        printf(text , __VA_ARGS__);              \
-}                                                \
-while(0)
-
-#define printf_log_msg(mode, text, ...) do{     \
+#define printf_log_msg(mode, ...) do{     \
     if (mode == 1)                              \
     {                                           \
-        printf(text, __VA_ARGS__);              \
+        printf(__VA_ARGS__);              \
     }                                           \
 }                                               \
 while(0)
