@@ -5,25 +5,6 @@
 
 // TODO: find place for this array
 
-cmd_struct possible_cmd[] = {{"PUSH", PUSH, number},
-                             {"PUSHREG", PUSHREG, string},
-                             {"POPREG", POPREG, string},
-                             {"ADD", ADD, none},
-                             {"SUB", SUB, none},
-                             {"DIV", DIV, none},
-                             {"MULT", MULT, none},
-                             {"SQRT", SQRT, none},
-                             {"IN", IN, none},
-                             {"OUT", OUT, none},
-                             {"JMP", JMP, number},
-                             {"JB", JB, number},
-                             {"JBE", JBE, number},
-                             {"JA", JA, number},
-                             {"JAE", JAE, number},
-                             {"JE", JE, number},
-                             {"JNE", JNE, number},
-                             {"HLT", HLT, none}};
-
 
 err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
 {

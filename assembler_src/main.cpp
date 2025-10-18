@@ -3,10 +3,10 @@
 #include "debug.h"
 #include "arg_parser.h"
 
-
 #include <stdio.h>
 
-// check scaling
+// TODO: listing
+// TODO: logs
 
 int main(int argc, char* argv[])
 {

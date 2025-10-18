@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include "../processor_src/processor_properties.h"
 #include "debug.h"
-#include "cmd_structures.h"
 
 const size_t max_labels_number = 10;
 const size_t max_cmd_len = 32;

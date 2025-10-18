@@ -13,6 +13,9 @@
 // debug messages to log file (in debug mode)
 // errors and introductory information in console (always)
 
+extern cmd_struct possible_cmd[];
+//extern FILE* log_ptr;
+
 err_t asm_ctor(assembler_info* asm_data, debug_info* debug);
 err_t fill_file_preamble(assembler_info* asm_data);
 err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debug);
