@@ -6,8 +6,9 @@
 #include "debug.h"
 #include "cmd_structures.h"
 
-const int max_labels_number = 10;
-const int preamble_size = 5;
+const size_t max_labels_number = 10;
+const size_t max_cmd_len = 32;
+const size_t preamble_size = 5;
 
 
 struct files_info
@@ -23,7 +24,7 @@ struct assembler_info
 {
     size_t len;
     char* str;
-    char raw_cmd[32];
+    char raw_cmd[max_cmd_len];
     int labels[max_labels_number];
     int pos;
     bool end;

@@ -3,6 +3,7 @@
 #include "debug.h"
 #include "arg_parser.h"
 
+
 #include <stdio.h>
 
 // check scaling

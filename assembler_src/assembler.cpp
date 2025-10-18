@@ -25,7 +25,6 @@ cmd_struct possible_cmd[] = {{"PUSH", PUSH, number},
                              {"HLT", HLT, none}};
 
 
-// refactor function
 err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
 {
     assert(asm_data != NULL);
@@ -37,12 +36,13 @@ err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
 
     asm_data->len = 50;
     asm_data->str = (char*) calloc(asm_data->len + 1, sizeof(char));
-    asm_data->cmd = UNKNOWN;
-    asm_data->end = false;
-    asm_data->pos = 0;
 
     for(int i = 0; i < max_labels_number; i++)
         asm_data->labels[i] = -1;
+
+    asm_data->pos = 0;
+    asm_data->end = false;
+    asm_data->cmd = UNKNOWN;
 
     debug->current_line = 0;
     debug->got_hlt = false;
@@ -69,17 +69,6 @@ err_t fill_file_preamble(assembler_info* asm_data)
     return ok;
 }
 
-void reset_data(assembler_info* asm_data, int* current_line, FILE* input_file)
-{
-    assert(asm_data != NULL);
-    assert(current_line != NULL);
-    assert(input_file != NULL);
-
-    asm_data->pos = 0;
-    *current_line = 0;
-    asm_data->end = 0;
-    rewind(input_file);
-}
 
 err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debug)
 {
@@ -128,44 +117,16 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
 }
 
 
-err_t check_prg_size(int pos, db_mode debug_mode)
+void reset_data(assembler_info* asm_data, int* current_line, FILE* input_file)
 {
-    if (pos == max_byte_code_len)
-    {
-        printf_err(debug_mode, "check_prg_size: max byte code size exceeded\n");
-        return error;
-    }
-    return ok;
-}
+    assert(asm_data != NULL);
+    assert(current_line != NULL);
+    assert(input_file != NULL);
 
-
-void code_check(debug_info* debug, proc_commands cmd)
-{
-    assert(debug != NULL);
-
-    debug->not_empty = true;
-
-    if (cmd == HLT)
-        debug->got_hlt = true;
-
-    if (cmd == OUT)
-        debug->got_out = true;
-
-}
-
-
-void output_labels(int* labels, db_mode debug_mode)
-{
-    assert(labels != NULL);
-
-    printf_log_msg(debug_mode, "\n");
-
-    printf_log_msg(debug_mode, "labels data:\n");
-
-    for (int i = 0; i < max_labels_number; i++)
-        printf_log_msg(debug_mode, "%d: %d\n", i, labels[i]);
-
-    printf_log_msg(debug_mode, "\n");
+    asm_data->pos = 0;
+    *current_line = 0;
+    asm_data->end = 0;
+    rewind(input_file);
 }
 
 
@@ -201,49 +162,4 @@ err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line)
     printf_err(debug_mode, "[%s:%d] -> determine_cmd: invalid command (%s)\n", file_name, current_line, asm_data->raw_cmd);
     asm_data->cmd = UNKNOWN;
     return error;
-}
-
-
-void check_warnings(debug_info* debug, char* input_file_name, db_mode debug_mode)
-{
-    assert(debug != NULL);
-    assert(input_file_name != NULL);
-
-    if (debug->not_empty)
-    {
-        if (!debug->got_out)
-        {
-            printf_warn(debug_mode, "[%s:%d:] -> assembler: calculations seem to have no effect\n", input_file_name, debug->current_line);
-            printf_note(debug_mode, "Note: you may forgot OUT instruction in your code\n", NULL);
-        }
-
-        if (!debug->got_hlt)
-            printf_warn(debug_mode, "[%s:%d:] -> assembler: no HLT instruction in the end of the program\n", input_file_name, debug->current_line);
-    }
-    else
-    {
-        printf_warn(debug_mode, "assembler: got blank file\n", NULL);
-    }
-}
-
-
-void output_code(FILE* fp, int* code, int pos, db_mode debug_mode)
-{
-    assert(fp != NULL);
-    assert(code != NULL);
-
-    if (debug_mode == on)
-    {
-        printf_log_msg(debug_mode, "\n");
-
-        for (int i = 0; i < pos + preamble_size; ++i)
-        {
-            printf_log_msg(debug_mode, "%d ", code[i]);
-        }
-
-        printf_log_msg(debug_mode, "\n\n");
-    }
-
-    for (int i = 0; i < pos + preamble_size; ++i)
-        fprintf(fp, "%d\n", code[i]);
 }
