@@ -13,6 +13,7 @@
 // errors and introductory information in console (always)
 
 err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_data);
+char* generate_output_name(char* input_file_name);
 void launch_help(void);
 void reset_data(assembler_info* asm_data, int* current_line, FILE* input_file);
 err_t asm_ctor(assembler_info* asm_data, debug_info* debug);

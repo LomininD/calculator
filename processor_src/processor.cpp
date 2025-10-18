@@ -213,15 +213,20 @@ err_t check_file_version(FILE* fp, proc_info* proc)
 
     int file_version = 0;
     fscanf(fp, "%d", &file_version);
-    if (file_version == version)
-    {
-        printf("check_file_version: assembly version verified\n");
-        return ok;
-    }
-    else
+    if (file_version < version)
     {
         printf("check_file_version: " MAKE_BOLD_RED("ERROR:") " assembly version is old\n");
         return error;
+    }
+    else if (file_version > version)
+    {
+        printf("check_file_version: " MAKE_BOLD_RED("ERROR:") " processor version is old\n");
+        return error;
+    }
+    else
+    {
+        printf("check_file_version: assembly version verified\n");
+        return ok;
     }
 }
 

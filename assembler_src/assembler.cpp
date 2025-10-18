@@ -1,6 +1,9 @@
 #include "assembler.h"
 #include "code_reader.h"
 #include "debug.h"
+#include "string.h"
+
+// TODO: find place for this array
 
 cmd_struct possible_cmd[] = {{"PUSH", PUSH, number},
                              {"PUSHREG", PUSHREG, string},
@@ -21,7 +24,6 @@ cmd_struct possible_cmd[] = {{"PUSH", PUSH, number},
                              {"JNE", JNE, number},
                              {"HLT", HLT, none}};
 
-const char* output_name =  "program.out"; // change
 
 // refactor (after)
 err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_data)
@@ -36,7 +38,6 @@ err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_
         return error;
     }
 
-    files->output_file_name = (char*) output_name; // change
     files->input_file_name = argv[1];
     files->input_file = fopen(files->input_file_name, "r");
 
@@ -85,7 +86,7 @@ err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_
     }
 
     if (!file_determined)
-        files->output_file_name = (char*) output_name; // change
+        files->output_file_name = generate_output_name(files->input_file_name);
 
     files->output_file = fopen(files->output_file_name, "w");
 
@@ -97,6 +98,36 @@ err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_
     }
 
     return ok;
+}
+
+char* generate_output_name(char* input_file_name)
+{
+    assert(input_file_name != NULL);
+
+    const char* out_ext = "out";
+
+    char* output_file_name = (char*) calloc(strlen(input_file_name) + 1, sizeof(char));
+
+    int i = 0;
+    while(*(input_file_name + i) != '.')
+    {
+        *(output_file_name + i) = *(input_file_name + i);
+        i++;
+    }
+
+    *(output_file_name + i) = *(input_file_name + i);
+    i++;
+
+    int j = 0;
+    while(*(out_ext + j) != '\0')
+    {
+        *(output_file_name + i) = *(out_ext + j);
+        i++;
+        j++;
+    }
+    puts(input_file_name);
+    puts(output_file_name);
+    return output_file_name;
 }
 
 void launch_help(void)
@@ -256,7 +287,7 @@ err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line)
 
     db_mode debug_mode = asm_data->debug_mode;
 
-    for(int i = 0; i < HLT; i++)
+    for(int i = 0; i < _count; i++)
     {
         if (strcmp(possible_cmd[i].name, asm_data->raw_cmd) == 0)
         {

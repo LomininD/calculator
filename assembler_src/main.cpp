@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
     check_warnings(&debug, files.input_file_name, asm_data.debug_mode);
 
     free(asm_data.str); // dtor
+    free(files.output_file_name); // dtor
     fclose(files.input_file);
     //printf_empty_line(debug_mode);
     output_code(files.output_file, asm_data.code, asm_data.pos, asm_data.debug_mode);

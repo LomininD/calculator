@@ -6,7 +6,7 @@
 
 // if file is updated UPDATE VERSION
 
-const int version = 6;
+const int version = 7;
 const int max_byte_code_len = 1000;
 const int register_amount = 8;
 
@@ -21,7 +21,7 @@ struct proc_info
 
 enum proc_commands
 {
-    UNKNOWN,
+    UNKNOWN = -1,
     PUSH,
     PUSHREG,
     POPREG,
@@ -39,7 +39,9 @@ enum proc_commands
     JAE,
     JE,
     JNE,
-    HLT
+    HLT,
+
+    _count
 };
 
 enum err_t

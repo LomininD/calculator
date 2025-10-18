@@ -28,24 +28,24 @@ enum db_mode
 }                                    \
 while(0)
 
-#define printf_log_msg(mode, ...) do{     \
+#define printf_log_msg(mode, ...) do{           \
     if (mode == 1)                              \
     {                                           \
-        printf(__VA_ARGS__);              \
+        printf(__VA_ARGS__);                    \
     }                                           \
 }                                               \
 while(0)
 
 
-#define printf_err(mode, ...) do{                     \
+#define printf_err(mode, ...) do{                                             \
     printf_empty_line(mode);                                                  \
-    printf(MAKE_BOLD_RED("ERROR: ") __VA_ARGS__);     \
+    printf(MAKE_BOLD_RED("ERROR: ") __VA_ARGS__);                             \
 }                                                                             \
 while(0)
 
-#define printf_warn(mode, ...) do{                 \
+#define printf_warn(mode, ...) do{                                          \
     printf_empty_line(mode);                                                \
-    printf(MAKE_BOLD("WARNING: ") __VA_ARGS__);    \
+    printf(MAKE_BOLD("WARNING: ") __VA_ARGS__);                             \
 }                                                                           \
 while(0)
 
@@ -54,10 +54,10 @@ while(0)
 }                                                  \
 while(0)
 
-#define printf_abortion(mode, ...) do{   \
-    printf_empty_line(mode);                                \
+#define printf_abortion(mode, ...) do{                                  \
+    printf_empty_line(mode);                                            \
     printf(MAKE_BOLD_RED("aborting due to error: ") __VA_ARGS__);       \
-}                                                           \
+}                                                                       \
 while(0)
 
 #endif
