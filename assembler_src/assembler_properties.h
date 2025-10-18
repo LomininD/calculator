@@ -30,7 +30,7 @@ struct assembler_info
     int labels[max_labels_number];
     int pos;
     bool end;
-    int code[max_byte_code_len];
+    int code[max_byte_code_len]; // do it as a dynamic array (after)
     proc_commands cmd;
     db_mode debug_mode;
 };

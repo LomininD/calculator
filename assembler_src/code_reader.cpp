@@ -1,22 +1,21 @@
 #include "code_reader.h"
 
-void readline(assembler_info* asm_data, files_info* file)
+void readline(assembler_info* asm_data, FILE* fp)
 {
     assert(asm_data != NULL);
-    assert(file != NULL);
+    assert(fp != NULL);
 
     size_t symbol_ind = 0;
     char c = 0;
 
     while (true)
     {
-        c = fgetc(file->input_file);
+        c = fgetc(fp);
 
         if (c == '\n' || c == '\r' || c == EOF)
         {
             if (c == EOF)
                 asm_data->end = true;
-
             break;
         }
 
@@ -38,17 +37,44 @@ void readline(assembler_info* asm_data, files_info* file)
 }
 
 
-err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* debug)
+err_t read_arg(char* file_name, assembler_info* asm_data, int current_line, arg_t arg_type)
 {
-    assert(files != NULL);
+    assert(file_name != NULL);
     assert(asm_data != NULL);
-    assert(debug != NULL);
+
+    err_t is_read = ok;
+
+    switch(arg_type)
+    {
+        case none:
+            break;
+        case number:
+            is_read = read_number_arg(file_name, asm_data, current_line);
+            return is_read;
+        case string:
+            is_read = read_string_arg(file_name, asm_data, current_line);
+            return is_read;
+        case label:
+            is_read = replace_label(file_name, asm_data, current_line);
+            return is_read;
+        default:
+            return error;
+    }
+    return ok;
+}
+
+
+err_t read_number_arg(char* file_name, assembler_info* asm_data, int current_line)
+{
+    assert(file_name != NULL);
+    assert(asm_data != NULL);
 
     db_mode debug_mode = asm_data->debug_mode;
 
     int number = 0;
+    char bad_symb = 0;
 
-    int success = sscanf(asm_data->str, "%*s %d", &number);
+    int success = sscanf(asm_data->str, "%*s %d %c", &number, &bad_symb);
 
     if (success == 1)
     {
@@ -63,65 +89,60 @@ err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* d
 
         if (success == 1)
         {
-            return replace_label(files, asm_data, debug);
+            return replace_label(file_name, asm_data, current_line);
         }
         else
         {
-            //printf_empty_line(debug_mode);
-            printf_err(debug_mode, "[%s:%d] -> read_number_arg: failed to get number\n", files->input_file_name, debug->current_line);
+            printf_err(debug_mode, "[%s:%d] -> read_number_arg: failed to get number\n", file_name, current_line);
             return error;
         }
     }
 }
 
 
-err_t read_string_arg(files_info* files, assembler_info* asm_data, debug_info* debug)
+err_t read_string_arg(char* file_name, assembler_info* asm_data, int current_line)
 {
-    assert(files != NULL);
+    assert(file_name != NULL);
     assert(asm_data != NULL);
-    assert(debug != NULL);
 
     db_mode debug_mode = asm_data->debug_mode;
 
     int number = 0;
-
     char arg[3] = {};
-    int success = sscanf(asm_data->str, "%*s %2s", arg); // fix
+    char bad_symb = 0;
+
+    int success = sscanf(asm_data->str, "%*s %2s %c", arg, &bad_symb);
 
     if (success == 1)
     {
-        printf_log_msg(debug_mode, "read_string_arg: recognised arg %s\n", arg);
+        printf_log_msg(debug_mode, "read_string_arg: recognised register name %s\n", arg);
 
         number = decode_reg_name(arg);
-
         printf_log_msg(debug_mode, "read_string_arg: got register index: %d\n", number);
+
         asm_data->code[asm_data->pos + preamble_size] = number;
         asm_data->pos++;
         return ok;
     }
     else
     {
-        //printf_empty_line(debug_mode);
-        printf_err(debug_mode, "[%s:%d] -> read_string_arg: failed to get arg\n", files->input_file_name, debug->current_line);
+        printf_err(debug_mode, "[%s:%d] -> read_string_arg: failed to get register name\n", file_name, current_line);
         return error;
     }
 }
 
 
-err_t read_label(files_info* files, assembler_info* asm_data, debug_info* debug)
+err_t read_label(char* file_name, assembler_info* asm_data, int current_line)
 {
-    assert(files != NULL);
+    assert(file_name != NULL);
     assert(asm_data != NULL);
-    assert(debug != NULL);
 
     db_mode debug_mode = asm_data->debug_mode;
 
     int number = 0;
+    char bad_symb = 0;
 
-    char bad_symb[2] = {};
-    int success = 0;
-
-    success = sscanf(asm_data->str, ":%d %1s", &number, bad_symb);
+    int success = sscanf(asm_data->str, ":%d %c", &number, &bad_symb);
 
     if (success == 1)
     {
@@ -129,7 +150,7 @@ err_t read_label(files_info* files, assembler_info* asm_data, debug_info* debug)
 
         if (number < 0 || number >= max_labels_number)
         {
-            printf_err(debug_mode, "[%s:%d] -> read_label: wrong label number\n", files->input_file_name, debug->current_line);
+            printf_err(debug_mode, "[%s:%d] -> read_label: wrong label number\n", file_name, current_line);
             return error;
         }
 
@@ -139,28 +160,23 @@ err_t read_label(files_info* files, assembler_info* asm_data, debug_info* debug)
     }
     else
     {
-        //printf_empty_line(debug_mode);
-        printf_err(debug_mode, "[%s:%d] -> read_label: failed to get label\n", files->input_file_name, debug->current_line);
+        printf_err(debug_mode, "[%s:%d] -> read_label: failed to get label\n", file_name, current_line);
         return error;
     }
 }
 
 
-
-err_t replace_label(files_info* files, assembler_info* asm_data, debug_info* debug)
+err_t replace_label(char* file_name, assembler_info* asm_data, int current_line)
 {
-    assert(files != NULL);
+    assert(file_name != NULL);
     assert(asm_data != NULL);
-    assert(debug != NULL);
 
     db_mode debug_mode = asm_data->debug_mode;
 
     int number = -1;
+    char bad_symb = 0;
 
-    char bad_symb[2] = {};
-    int success = 0;
-
-    success = sscanf(asm_data->str, "%*s :%d %s", &number, bad_symb);
+    int success = sscanf(asm_data->str, "%*s :%d %c", &number, &bad_symb);
 
     if (success == 1)
     {
@@ -168,7 +184,7 @@ err_t replace_label(files_info* files, assembler_info* asm_data, debug_info* deb
 
         if (number < 0 || number >= max_labels_number)
         {
-            printf_err(debug_mode, "[%s:%d] -> replace_label: wrong label number\n", files->input_file_name, debug->current_line);
+            printf_err(debug_mode, "[%s:%d] -> replace_label: wrong label number\n", file_name, current_line);
             return error;
         }
 
@@ -181,8 +197,7 @@ err_t replace_label(files_info* files, assembler_info* asm_data, debug_info* deb
     }
     else
     {
-        //printf_empty_line(debug_mode);
-        printf_err(debug_mode, "[%s:%d] -> replace_label: failed to get label\n", files->input_file_name, debug->current_line);
+        printf_err(debug_mode, "[%s:%d] -> replace_label: failed to get label\n", file_name, current_line);
         return error;
     }
 }

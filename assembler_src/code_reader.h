@@ -8,14 +8,16 @@
 #include "../processor_src/processor_properties.h"
 #include "../processor_src/stack/font_styles.h"
 #include "assembler_properties.h"
+#include "cmd_structures.h"
 
 
-err_t read_number_arg(files_info* files, assembler_info* asm_data, debug_info* debug);
-err_t read_string_arg(files_info* files, assembler_info* asm_data, debug_info* debug);
-err_t read_label(files_info* files, assembler_info* asm_data, debug_info* debug);
-err_t replace_label(files_info* files, assembler_info* asm_data, debug_info* debug);
+err_t read_arg(char* file_name, assembler_info* asm_data, int current_line, arg_t arg_type);
+err_t read_number_arg(char* file_name, assembler_info* asm_data, int current_line);
+err_t read_string_arg(char* file_name, assembler_info* asm_data, int current_line);
+err_t read_label(char* file_name, assembler_info* asm_data, int current_line);
+err_t replace_label(char* file_name, assembler_info* asm_data, int current_line);
 int decode_reg_name(char* arg);
-void readline(assembler_info* asm_data, files_info* file);
+void readline(assembler_info* asm_data, FILE* fp);
 
 
 #endif

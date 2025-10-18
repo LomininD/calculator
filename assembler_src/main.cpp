@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+// check scaling
 
 int main(int argc, char* argv[])
 {
@@ -40,10 +41,10 @@ int main(int argc, char* argv[])
     printf_log_msg(asm_data.debug_mode, "assembler: preliminary compilation finished\n", NULL);
 
     if (asm_data.debug_mode == on)
-        output_labels(&asm_data);
+        output_labels(asm_data.labels, asm_data.debug_mode);
 
     printf_log_msg(asm_data.debug_mode, "assembler: final compilation began\n", NULL);
-    
+
     fill_file_preamble(&asm_data);
     reset_data(&asm_data, &debug.current_line, files.input_file);
 
@@ -56,7 +57,7 @@ int main(int argc, char* argv[])
 
     printf_log_msg(asm_data.debug_mode, "assembler: final compilation finished\n", NULL);
 
-    check_warnings(&debug, &files, &asm_data);
+    check_warnings(&debug, files.input_file_name, asm_data.debug_mode);
 
     free(asm_data.str); // dtor
     fclose(files.input_file);

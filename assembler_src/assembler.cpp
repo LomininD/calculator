@@ -1,14 +1,17 @@
 #include "assembler.h"
 #include "code_reader.h"
 #include "cmd_encoder.h"
+#include "cmd_structures.h"
 #include "debug.h"
 
 const char* output_name =  "program.out"; // change
 
-err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_data) // add help
+// refactor (after)
+err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_data)
 {
     assert(argv != NULL);
     assert(files != NULL);
+    assert(asm_data != NULL);
 
     if (argc < 2)
     {
@@ -93,7 +96,7 @@ err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
 
     db_mode debug_mode = asm_data->debug_mode;
 
-    printf_log_msg(debug_mode, "asm_ctor: began initialising\n", NULL);
+    printf_log_msg(debug_mode, "asm_ctor: began initialising\n");
 
     asm_data->len = 50;
     asm_data->str = (char*) calloc(asm_data->len + 1, sizeof(char));
@@ -109,7 +112,7 @@ err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
     debug->got_out = false;
     debug->not_empty = false;
 
-    printf_log_msg(debug_mode, "asm_ctor: finished initialising\n", NULL);
+    printf_log_msg(debug_mode, "asm_ctor: finished initialising\n");
     return ok;
 }
 
@@ -149,41 +152,37 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
 
     db_mode debug_mode = asm_data->debug_mode;
 
+    printf_log_msg(debug_mode, "\n");
+
     while (!asm_data->end)
     {
         debug->current_line++;
-        readline(asm_data, files);
-
+        readline(asm_data, files->input_file);
         if (asm_data->end)
             break;
 
-        debug->not_empty = true;
-
         printf_log_msg(debug_mode, "current pos in byte_code = %d\n", asm_data->pos);
-
         printf_log_msg(debug_mode, "assembler: got str: %s\n", asm_data->str);
 
         int scanned = sscanf(asm_data->str, "%31s", asm_data->raw_cmd);
         if (scanned == -1)
         {
-            printf_log_msg(debug_mode, "\n", NULL);
+            printf_log_msg(debug_mode, "\n");
             continue;
         }
 
         printf_log_msg(debug_mode, "assembler: got instruction: %s\n", asm_data->raw_cmd);
 
-        err_t recognized = determine_cmd(files, asm_data, debug);
-
+        err_t recognized = determine_cmd(files->input_file_name, asm_data, debug->current_line);
         if (recognized != ok)
             return error;
 
-        if (asm_data->cmd == HLT)
-            debug->got_hlt = true;
+        code_check(debug, asm_data->cmd);
 
-        if (asm_data->cmd == OUT)
-            debug->got_out = true;
+        if (check_prg_size(asm_data->pos, debug_mode) != ok)
+            return error;
 
-        printf_log_msg(debug_mode, "\n", NULL);
+        printf_log_msg(debug_mode, "\n");
 
         if (debug_mode == on)
             getchar();
@@ -192,151 +191,194 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
 }
 
 
+err_t check_prg_size(int pos, db_mode debug_mode)
+{
+    if (pos == max_byte_code_len)
+    {
+        printf_err(debug_mode, "check_prg_size: max byte code size exceeded\n");
+        return error;
+    }
+    return ok;
+}
+
+
+void code_check(debug_info* debug, proc_commands cmd)
+{
+    assert(debug != NULL);
+
+    debug->not_empty = true;
+
+    if (cmd == HLT)
+        debug->got_hlt = true;
+
+    if (cmd == OUT)
+        debug->got_out = true;
+
+}
+
+
 void output_labels(int* labels, db_mode debug_mode)
 {
     assert(labels != NULL);
 
-    db_mode debug_mode = asm_data->debug_mode;
+    printf_log_msg(debug_mode, "\n");
 
-    printf_log_msg(debug_mode, "\n", NULL);
-
-    printf_log_msg(debug_mode, "labels data:\n", NULL);
+    printf_log_msg(debug_mode, "labels data:\n");
 
     for (int i = 0; i < max_labels_number; i++)
-        printf_log_msg(debug_mode, "%d: %d\n", i, asm_data->labels[i], NULL);
+        printf_log_msg(debug_mode, "%d: %d\n", i, labels[i]);
 
-    printf_log_msg(debug_mode, "\n", NULL);
+    printf_log_msg(debug_mode, "\n");
 }
 
 
-err_t determine_cmd(files_info* files, assembler_info* asm_data, debug_info* debug) // ask how to refactor
+// refactor this shit
+err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line)
 {
-    assert(files != NULL);
+    assert(file_name != NULL);
     assert(asm_data != NULL);
-    assert(debug != NULL);
 
     db_mode debug_mode = asm_data->debug_mode;
 
     if (strcmp("PUSH", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized push\n", NULL);
-        return encode_push(files, asm_data, debug);
+        printf_log_msg(debug_mode, "determine_cmd: recognized push\n");
+        asm_data->cmd = PUSH; // ???
+        asm_data->code[asm_data->pos + preamble_size] = PUSH;
+        asm_data->pos++;
+        err_t is_read = read_arg(file_name, asm_data, current_line, number);
+        return is_read;
     }
     else if (strcmp("PUSHREG", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized pushreg\n", NULL);
-        return encode_reg_cmd(files, asm_data, debug, PUSHREG);
+        printf_log_msg(debug_mode, "determine_cmd: recognized pushreg\n");
+        asm_data->cmd = PUSHREG;
+        return encode_reg_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("POPREG", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized popreg\n", NULL);
-        return encode_reg_cmd(files, asm_data, debug, POPREG);
+        printf_log_msg(debug_mode, "determine_cmd: recognized popreg\n");
+        asm_data->cmd = POPREG;
+        return encode_reg_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("ADD", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized add\n", NULL);
-        return encode_calc_cmd(files, asm_data, debug, ADD);
+        printf_log_msg(debug_mode, "determine_cmd: recognized add\n");
+        asm_data->cmd = ADD;
+        return encode_calc_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("SUB", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized sub\n", NULL);
-        return encode_calc_cmd(files, asm_data, debug, SUB);
+        printf_log_msg(debug_mode, "determine_cmd: recognized sub\n");
+        asm_data->cmd = SUB;
+        return encode_calc_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("DIV", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized div\n", NULL);
-        return encode_calc_cmd(files, asm_data, debug, DIV);
+        printf_log_msg(debug_mode, "determine_cmd: recognized div\n");
+        asm_data->cmd = DIV;
+        return encode_calc_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("MULT", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized mult\n", NULL);
-        return encode_calc_cmd(files, asm_data, debug, MULT);
+        printf_log_msg(debug_mode, "determine_cmd: recognized mult\n");
+        asm_data->cmd = MULT;
+        return encode_calc_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("SQRT", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized sqrt\n", NULL);
-        return encode_calc_cmd(files, asm_data, debug, SQRT);
+        printf_log_msg(debug_mode, "determine_cmd: recognized sqrt\n");
+        asm_data->cmd = SQRT;
+        return encode_calc_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("IN", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized in\n", NULL);
-        return encode_in_out(files, asm_data, debug, IN);
+        printf_log_msg(debug_mode, "determine_cmd: recognized in\n");
+        asm_data->cmd = IN;
+        return encode_in_out(file_name, asm_data, current_line);
     }
     else if (strcmp("OUT", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized out\n", NULL);
-        return encode_in_out(files, asm_data, debug, OUT);
+        printf_log_msg(debug_mode, "determine_cmd: recognized out\n");
+        asm_data->cmd = OUT;
+        return encode_in_out(file_name, asm_data, current_line);
     }
     else if (strcmp("JMP", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jmp\n", NULL);
-        return encode_jmp_cmd(files, asm_data, debug, JMP);
+        printf_log_msg(debug_mode, "determine_cmd: recognized jmp\n");
+        asm_data->cmd = JMP;
+        return encode_jmp_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("JB", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jb\n", NULL);
-        return encode_jmp_cmd(files, asm_data, debug, JB);
+        printf_log_msg(debug_mode, "determine_cmd: recognized jb\n");
+        asm_data->cmd = JB;
+        return encode_jmp_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("JBE", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jbe\n", NULL);
-        return encode_jmp_cmd(files, asm_data, debug, JBE);
+        printf_log_msg(debug_mode, "determine_cmd: recognized jbe\n");
+        asm_data->cmd = JBE;
+        return encode_jmp_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("JA", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized ja\n", NULL);
-        return encode_jmp_cmd(files, asm_data, debug, JA);
+        printf_log_msg(debug_mode, "determine_cmd: recognized ja\n");
+        asm_data->cmd = JA;
+        return encode_jmp_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("JAE", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jae\n", NULL);
-        return encode_jmp_cmd(files, asm_data, debug, JAE);
+        printf_log_msg(debug_mode, "determine_cmd: recognized jae\n");
+        asm_data->cmd = JAE;
+        return encode_jmp_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("JE", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized je\n", NULL);
-        return encode_jmp_cmd(files, asm_data, debug, JE);
+        printf_log_msg(debug_mode, "determine_cmd: recognized je\n");
+        asm_data->cmd = JE;
+        return encode_jmp_cmd(file_name, asm_data, current_line);
     }
     else if (strcmp("JNE", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jne\n", NULL);
-        return encode_jmp_cmd(files, asm_data, debug, JNE);
+        printf_log_msg(debug_mode, "determine_cmd: recognized jne\n");
+        asm_data->cmd = JNE;
+        return encode_jmp_cmd(file_name, asm_data, current_line);
     }
     else if (asm_data->raw_cmd[0] == ':')
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized label\n", NULL);
-        return read_label(files, asm_data, debug);
+        printf_log_msg(debug_mode, "determine_cmd: recognized label\n");
+        return read_label(file_name, asm_data, current_line);
     }
     else if (strcmp("HLT", asm_data->raw_cmd) == 0)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized hlt\n", NULL);
-        return encode_hlt(files, asm_data);
+        printf_log_msg(debug_mode, "determine_cmd: recognized hlt\n");
+        asm_data->cmd = HLT;
+        return encode_hlt(file_name, asm_data, current_line);
     }
 
-    printf_log_msg(debug_mode, "\n", NULL);
-    printf_err(debug_mode, "[%s:%d] -> determine_cmd: invalid command (%s)\n", files->input_file_name, debug->current_line, asm_data->raw_cmd);
+    printf_log_msg(debug_mode, "\n");
+    printf_err(debug_mode, "[%s:%d] -> determine_cmd: invalid command (%s)\n", file_name, current_line, asm_data->raw_cmd);
     asm_data->cmd = UNKNOWN;
     return error;
 }
 
 
-void check_warnings(debug_info* debug, files_info* files, assembler_info* asm_data)
+void check_warnings(debug_info* debug, char* input_file_name, db_mode debug_mode)
 {
     assert(debug != NULL);
-    assert(files != NULL);
-
-    db_mode debug_mode = asm_data->debug_mode;
+    assert(input_file_name != NULL);
 
     if (debug->not_empty)
     {
         if (!debug->got_out)
         {
-            printf_warn(debug_mode, "[%s:%d:] -> assembler: calculations seem to have no effect\n", files->input_file_name, debug->current_line);
+            printf_warn(debug_mode, "[%s:%d:] -> assembler: calculations seem to have no effect\n", input_file_name, debug->current_line);
             printf_note(debug_mode, "Note: you may forgot OUT instruction in your code\n", NULL);
         }
 
         if (!debug->got_hlt)
-            printf_warn(debug_mode, "[%s:%d:] -> assembler: no HLT instruction in the end of the program\n", files->input_file_name, debug->current_line);
+            printf_warn(debug_mode, "[%s:%d:] -> assembler: no HLT instruction in the end of the program\n", input_file_name, debug->current_line);
     }
     else
     {
@@ -345,21 +387,23 @@ void check_warnings(debug_info* debug, files_info* files, assembler_info* asm_da
 }
 
 
-void output_code(FILE* fp, int* code, int pos, db_mode debug_mode) // do output in file
+void output_code(FILE* fp, int* code, int pos, db_mode debug_mode)
 {
+    assert(fp != NULL);
     assert(code != NULL);
 
     if (debug_mode == on)
     {
+        printf_log_msg(debug_mode, "\n");
+
         for (int i = 0; i < pos + preamble_size; ++i)
         {
             printf_log_msg(debug_mode, "%d ", code[i]);
         }
-        printf_log_msg(debug_mode, "\n");
+
+        printf_log_msg(debug_mode, "\n\n");
     }
 
     for (int i = 0; i < pos + preamble_size; ++i)
-    {
         fprintf(fp, "%d\n", code[i]);
-    }
 }
