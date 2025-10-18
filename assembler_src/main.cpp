@@ -1,6 +1,7 @@
 #include "assembler.h"
 #include "code_reader.h"
 #include "debug.h"
+#include "arg_parser.h"
 
 #include <stdio.h>
 
@@ -59,11 +60,13 @@ int main(int argc, char* argv[])
 
     check_warnings(&debug, files.input_file_name, asm_data.debug_mode);
 
-    free(asm_data.str); // dtor
-    free(files.output_file_name); // dtor
-    fclose(files.input_file);
-    //printf_empty_line(debug_mode);
     output_code(files.output_file, asm_data.code, asm_data.pos, asm_data.debug_mode);
+
+    if (!files.output_defined) // dtor
+        free(files.output_file_name); // dtor
+    free(asm_data.str); // dtor
+    fclose(files.input_file); // dtor
+    fclose(files.output_file); // dtor
     printf("assembler: finished assembly\n", NULL);
     return 0;
 }

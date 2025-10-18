@@ -46,8 +46,8 @@ enum proc_commands
 
 enum err_t
 {
-    ok,
     error,
+    ok,
     help
 };
 

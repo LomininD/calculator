@@ -9,12 +9,14 @@
 const int max_labels_number = 10;
 const int preamble_size = 5;
 
+
 struct files_info
 {
     char* input_file_name;
     char* output_file_name;
     FILE* input_file;
     FILE* output_file;
+    bool output_defined;
 };
 
 struct assembler_info

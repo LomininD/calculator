@@ -11,17 +11,6 @@ enum db_mode
 // msg only in debug mode in console and log file
 // general info only in console
 
-// REFACTOR in one define with VA_ARGS
-// reorder error message
-
-// messages types:
-// - error messages with red ERROR (done)
-// - warning messages (done)
-// - messages of shutting down due to error (done)
-// - debug messages (done)
-// - general messages (done)
-// - note messages (done)
-// - empty line (done)
 
 #define printf_empty_line(mode) do{  \
     printf("\n");                    \
