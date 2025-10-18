@@ -1,8 +1,25 @@
 #include "assembler.h"
 #include "code_reader.h"
-#include "cmd_encoder.h"
-#include "cmd_structures.h"
 #include "debug.h"
+
+cmd_struct possible_cmd[] = {{"PUSH", PUSH, number},
+                             {"PUSHREG", PUSHREG, string},
+                             {"POPREG", POPREG, string},
+                             {"ADD", ADD, none},
+                             {"SUB", SUB, none},
+                             {"DIV", DIV, none},
+                             {"MULT", MULT, none},
+                             {"SQRT", SQRT, none},
+                             {"IN", IN, none},
+                             {"OUT", OUT, none},
+                             {"JMP", JMP, number},
+                             {"JB", JB, number},
+                             {"JBE", JBE, number},
+                             {"JA", JA, number},
+                             {"JAE", JAE, number},
+                             {"JE", JE, number},
+                             {"JNE", JNE, number},
+                             {"HLT", HLT, none}};
 
 const char* output_name =  "program.out"; // change
 
@@ -232,7 +249,6 @@ void output_labels(int* labels, db_mode debug_mode)
 }
 
 
-// refactor this shit
 err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line)
 {
     assert(file_name != NULL);
@@ -240,121 +256,25 @@ err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line)
 
     db_mode debug_mode = asm_data->debug_mode;
 
-    if (strcmp("PUSH", asm_data->raw_cmd) == 0)
+    for(int i = 0; i < HLT; i++)
     {
-        printf_log_msg(debug_mode, "determine_cmd: recognized push\n");
-        asm_data->cmd = PUSH; // ???
-        asm_data->code[asm_data->pos + preamble_size] = PUSH;
-        asm_data->pos++;
-        err_t is_read = read_arg(file_name, asm_data, current_line, number);
-        return is_read;
+        if (strcmp(possible_cmd[i].name, asm_data->raw_cmd) == 0)
+        {
+            printf_log_msg(debug_mode, "determine_cmd: recognized %s\n", possible_cmd[i].name);
+
+            asm_data->cmd = possible_cmd[i].cmd_code;
+            asm_data->code[asm_data->pos + preamble_size] = possible_cmd[i].cmd_code;
+            asm_data->pos++;
+
+            err_t is_read = read_arg(file_name, asm_data, current_line, possible_cmd[i].arg_type);
+            return is_read;
+        }
     }
-    else if (strcmp("PUSHREG", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized pushreg\n");
-        asm_data->cmd = PUSHREG;
-        return encode_reg_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("POPREG", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized popreg\n");
-        asm_data->cmd = POPREG;
-        return encode_reg_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("ADD", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized add\n");
-        asm_data->cmd = ADD;
-        return encode_calc_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("SUB", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized sub\n");
-        asm_data->cmd = SUB;
-        return encode_calc_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("DIV", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized div\n");
-        asm_data->cmd = DIV;
-        return encode_calc_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("MULT", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized mult\n");
-        asm_data->cmd = MULT;
-        return encode_calc_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("SQRT", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized sqrt\n");
-        asm_data->cmd = SQRT;
-        return encode_calc_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("IN", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized in\n");
-        asm_data->cmd = IN;
-        return encode_in_out(file_name, asm_data, current_line);
-    }
-    else if (strcmp("OUT", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized out\n");
-        asm_data->cmd = OUT;
-        return encode_in_out(file_name, asm_data, current_line);
-    }
-    else if (strcmp("JMP", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jmp\n");
-        asm_data->cmd = JMP;
-        return encode_jmp_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("JB", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jb\n");
-        asm_data->cmd = JB;
-        return encode_jmp_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("JBE", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jbe\n");
-        asm_data->cmd = JBE;
-        return encode_jmp_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("JA", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized ja\n");
-        asm_data->cmd = JA;
-        return encode_jmp_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("JAE", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jae\n");
-        asm_data->cmd = JAE;
-        return encode_jmp_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("JE", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized je\n");
-        asm_data->cmd = JE;
-        return encode_jmp_cmd(file_name, asm_data, current_line);
-    }
-    else if (strcmp("JNE", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized jne\n");
-        asm_data->cmd = JNE;
-        return encode_jmp_cmd(file_name, asm_data, current_line);
-    }
-    else if (asm_data->raw_cmd[0] == ':')
+
+    if (asm_data->raw_cmd[0] == ':')
     {
         printf_log_msg(debug_mode, "determine_cmd: recognized label\n");
         return read_label(file_name, asm_data, current_line);
-    }
-    else if (strcmp("HLT", asm_data->raw_cmd) == 0)
-    {
-        printf_log_msg(debug_mode, "determine_cmd: recognized hlt\n");
-        asm_data->cmd = HLT;
-        return encode_hlt(file_name, asm_data, current_line);
     }
 
     printf_log_msg(debug_mode, "\n");

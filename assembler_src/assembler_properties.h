@@ -4,15 +4,10 @@
 #include <stdio.h>
 #include "../processor_src/processor_properties.h"
 #include "debug.h"
+#include "cmd_structures.h"
 
 const int max_labels_number = 10;
 const int preamble_size = 5;
-
-enum writing_mode
-{
-    writing_off,
-    writing_on
-};
 
 struct files_info
 {
