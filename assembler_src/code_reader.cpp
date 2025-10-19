@@ -69,7 +69,7 @@ err_t read_number_arg(char* file_name, assembler_info* asm_data, int current_lin
     assert(file_name != NULL);
     assert(asm_data != NULL);
 
-    db_mode debug_mode = asm_data->debug_mode;
+    md_t debug_mode = asm_data->debug_mode;
 
     int number = 0;
     char bad_symb = 0;
@@ -105,7 +105,7 @@ err_t read_string_arg(char* file_name, assembler_info* asm_data, int current_lin
     assert(file_name != NULL);
     assert(asm_data != NULL);
 
-    db_mode debug_mode = asm_data->debug_mode;
+    md_t debug_mode = asm_data->debug_mode;
 
     int number = 0;
     char arg[3] = {};
@@ -137,7 +137,7 @@ err_t read_label(char* file_name, assembler_info* asm_data, int current_line)
     assert(file_name != NULL);
     assert(asm_data != NULL);
 
-    db_mode debug_mode = asm_data->debug_mode;
+    md_t debug_mode = asm_data->debug_mode;
 
     int number = 0;
     char bad_symb = 0;
@@ -171,7 +171,7 @@ err_t replace_label(char* file_name, assembler_info* asm_data, int current_line)
     assert(file_name != NULL);
     assert(asm_data != NULL);
 
-    db_mode debug_mode = asm_data->debug_mode;
+    md_t debug_mode = asm_data->debug_mode;
 
     int number = -1;
     char bad_symb = 0;

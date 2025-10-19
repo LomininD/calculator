@@ -14,7 +14,7 @@ err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_
     {
         if (argv[i][0] == '-')
         {
-            err_t got_flags = parse_flags(argv[i], &asm_data->debug_mode, &verification);
+            err_t got_flags = parse_flags(argv[i], asm_data, &verification);
             if (got_flags != ok)
                 return got_flags;
         }
@@ -31,14 +31,14 @@ err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_
     files->output_defined = verification.got_o_flag;
 
     if (verified)
-        return open_files(files, &verification);
+        return open_files(files, &verification, asm_data);
     else
         return error;
 }
 
-err_t parse_flags(char flag_str[], db_mode* debug_mode, parser_struct* verification)
+err_t parse_flags(char flag_str[], assembler_info* asm_data, parser_struct* verification)
 {
-    assert(debug_mode != NULL);
+    assert(asm_data != NULL);
     assert(verification != NULL);
 
     int ind = 1;
@@ -46,7 +46,11 @@ err_t parse_flags(char flag_str[], db_mode* debug_mode, parser_struct* verificat
     {
         if (flag_str[ind] == 'd')
         {
-            *debug_mode = on;
+            asm_data->debug_mode = on;
+        }
+        else if (flag_str[ind] == 'l') // TODO: does not developed yet
+        {
+            asm_data->listing_mode = on;
         }
         else if (flag_str[ind] == 'o')
         {
@@ -73,7 +77,6 @@ err_t parse_file_name(files_info* files, char* files_str, parser_struct* verific
 {
     assert(files != NULL);
     assert(verification != NULL);
-
 
     if (!verification->input_file_determined)
     {
@@ -149,9 +152,10 @@ err_t verify_file_names(files_info* files, parser_struct* verification)
     return ok;
 }
 
-err_t open_files(files_info* files, parser_struct* verification)
+err_t open_files(files_info* files, parser_struct* verification, assembler_info* asm_data)
 {
     assert(files != NULL);
+    assert(asm_data != NULL);
     assert(verification != NULL);
 
     if (!verification->got_o_flag)
@@ -160,11 +164,27 @@ err_t open_files(files_info* files, parser_struct* verification)
     files->input_file = fopen(files->input_file_name, "r");
     files->output_file = fopen(files->output_file_name, "w");
 
-    if (files->input_file == NULL || files->output_file == NULL)
+    if (asm_data->debug_mode == on)
+    {
+        log_ptr = fopen("asm_log.txt", "w");
+    }
+
+    if (asm_data->listing_mode == on)
+    {
+        listing_ptr = fopen("listing.lst", "w");
+    }
+
+    if (files->input_file == NULL                               || \
+        files->output_file == NULL                              || \
+        (asm_data->debug_mode == on && log_ptr == NULL)         || \
+        (asm_data->listing_mode == on && listing_ptr == NULL))
     {
         printf(MAKE_BOLD_RED("ERROR:") " a problem with opening files occurred\n");
         printf(MAKE_GREY("Note: file name may be incorrect\n"));
         return error;
     }
+
+
+
     return ok;
 }

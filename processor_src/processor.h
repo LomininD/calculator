@@ -4,7 +4,7 @@
 #include "stack/stack.h"
 #include "stack/font_styles.h"
 #include "stack/stack_dump.h"
-#include "processor_properties.h"
+#include "../shared/processor_properties.h"
 #include "processor_cmd.h"
 
 err_t open_file(FILE** fp, int argc, char* argv[]);

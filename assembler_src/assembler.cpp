@@ -1,9 +1,7 @@
 #include "assembler.h"
 #include "code_reader.h"
-#include "debug.h"
+#include "../shared/debug.h"
 #include "string.h"
-
-// TODO: find place for this array
 
 
 err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
@@ -11,7 +9,7 @@ err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
     assert(asm_data != NULL);
     assert(debug != NULL);
 
-    db_mode debug_mode = asm_data->debug_mode;
+    md_t debug_mode = asm_data->debug_mode;
 
     printf_log_msg(debug_mode, "asm_ctor: began initialising\n");
 
@@ -57,7 +55,7 @@ err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debu
     assert(asm_data != NULL);
     assert(debug != NULL);
 
-    db_mode debug_mode = asm_data->debug_mode;
+    md_t debug_mode = asm_data->debug_mode;
 
     printf_log_msg(debug_mode, "\n");
 
@@ -116,9 +114,9 @@ err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line)
     assert(file_name != NULL);
     assert(asm_data != NULL);
 
-    db_mode debug_mode = asm_data->debug_mode;
+    md_t debug_mode = asm_data->debug_mode;
 
-    for(int i = 0; i < _count; i++)
+    for(int i = 0; i < _cmd_count; i++)
     {
         if (strcmp(possible_cmd[i].name, asm_data->raw_cmd) == 0)
         {
@@ -143,4 +141,25 @@ err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line)
     printf_err(debug_mode, "[%s:%d] -> determine_cmd: invalid command (%s)\n", file_name, current_line, asm_data->raw_cmd);
     asm_data->cmd = UNKNOWN;
     return error;
+}
+
+
+err_t asm_dtor(files_info* files, assembler_info* asm_data)
+{
+    assert(files != NULL);
+    assert(asm_data != NULL);
+
+    md_t debug_mode = asm_data->debug_mode;
+
+    printf_log_msg(debug_mode, "asm_dtor: began termination\n");
+
+    if (!files->output_defined)
+        free(files->output_file_name);
+    free(asm_data->str);
+    fclose(files->input_file);
+    fclose(files->output_file);
+
+    printf_log_msg(debug_mode, "asm_dtor: done termination\n");
+
+    return ok;
 }

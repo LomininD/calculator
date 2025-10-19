@@ -1,7 +1,7 @@
 #include "processor_cmd.h"
 #include "processor.h"
 
-// *1000 to work with floats 
+// *1000 to work with floats
 
 
 int main(int argc, char* argv[])
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     if (initialised != ok)
         END_PROCESS;
 
-    err_t is_read = read_byte_code(fp, &spu);
+    err_t is_read = read_byte_code(fp, proc);
     if (is_read != ok)
         END_PROCESS;
 

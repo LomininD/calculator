@@ -208,7 +208,7 @@ err_t proc_in(proc_info* proc)
 err_t get_number(int* number) // refactor
 {
     char str_number[11] = {};
-    // maximum number len is 9 symbols 10 symbols are read to check if number is overflowed
+    // max number len is 9 symbols 10 symbols are read to check if number is overflowed
     char bad_symbols[11] = {};
     fgets(str_number, 11, stdin);
     int scanned = sscanf(str_number, "%d%s", number, bad_symbols);
@@ -344,43 +344,8 @@ bool check_condition(proc_commands cmd, int a, int b)
 
 const char* decode_cmd (proc_commands cmd)
 {
-    switch (cmd)
-    {
-        case ADD:
-            return "add";
-            break;
-        case SUB:
-            return "sub";
-            break;
-        case MULT:
-            return "mult";
-            break;
-        case DIV:
-            return "div";
-            break;
-        case SQRT:
-            return "sqrt";
-            break;
-        case JB:
-            return "JB";
-            break;
-        case JBE:
-            return "JBE";
-            break;
-        case JA:
-            return "JA";
-            break;
-        case JAE:
-            return "JAE";
-            break;
-        case JE:
-            return "JE";
-            break;
-        case JNE:
-            return "JNE";
-            break;
-        default:
-            return "unknown command";
-            break;
-    }
+    for (int i = 0; i < _cmd_count; i++)
+        if (cmd == possible_cmd[i].cmd_code)
+            return possible_cmd[i].name;
+    return "unknown cmd";
 }

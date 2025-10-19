@@ -4,8 +4,9 @@
 #include <stdio.h>
 
 extern FILE* log_ptr;
+extern FILE* listing_ptr;
 
-enum db_mode
+enum md_t
 {
     off,
     on
@@ -17,7 +18,8 @@ enum db_mode
 
 #define printf_empty_line(mode) do{  \
     printf("\n");                    \
-    fprintf(log_ptr, "\n");          \
+    if (mode == on)                  \
+        fprintf(log_ptr, "\n");      \
 }                                    \
 while(0)
 
@@ -34,14 +36,16 @@ while(0)
 #define printf_err(mode, ...) do{                                             \
     printf_empty_line(mode);                                                  \
     printf(MAKE_BOLD_RED("ERROR: ") __VA_ARGS__);                             \
-    fprintf(log_ptr, "ERROR: " __VA_ARGS__);                   \
+    if (mode == on)                                                           \
+        fprintf(log_ptr, "ERROR: " __VA_ARGS__);                              \
 }                                                                             \
 while(0)
 
 #define printf_warn(mode, ...) do{                                          \
     printf_empty_line(mode);                                                \
     printf(MAKE_BOLD("WARNING: ") __VA_ARGS__);                             \
-    fprintf(log_ptr, "WARNING: " __VA_ARGS__);                   \
+    if (mode == on)                                                         \
+        fprintf(log_ptr, "WARNING: " __VA_ARGS__);                          \
 }                                                                           \
 while(0)
 
@@ -53,7 +57,8 @@ while(0)
 #define printf_abortion(mode, ...) do{                                      \
     printf_empty_line(mode);                                                \
     printf(MAKE_BOLD_RED("aborting due to error: ") __VA_ARGS__);           \
-    fprintf(log_ptr, "aborting due to error: " __VA_ARGS__); \
+    if (mode == on)                                                         \
+        fprintf(log_ptr, "aborting due to error: " __VA_ARGS__);            \
 }                                                                           \
 while(0)
 

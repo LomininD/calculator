@@ -1,14 +1,15 @@
 #ifndef PROCESSOR_PROPERTIES_H
 #define PROCESSOR_PROPERTIES_H
 
-#include "stack/stack.h"
-#include "stack/stack_dump.h"
+#include "../processor_src/stack/stack.h"
+#include "../processor_src/stack/stack_dump.h"
 
 // if file is updated UPDATE VERSION
 
 const int version = 7;
 const int max_byte_code_len = 1000;
 const int register_amount = 8;
+
 
 struct proc_info
 {
@@ -41,7 +42,7 @@ enum proc_commands
     JNE,
     HLT,
 
-    _count
+    _cmd_count
 };
 
 enum err_t
@@ -66,5 +67,6 @@ struct cmd_struct
     arg_t arg_type;
 };
 
+extern cmd_struct possible_cmd[];
 
 #endif

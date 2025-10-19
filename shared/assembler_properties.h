@@ -2,7 +2,7 @@
 # define ASSEMBLER_PROPERTIES_H
 
 #include <stdio.h>
-#include "../processor_src/processor_properties.h"
+#include "processor_properties.h"
 #include "debug.h"
 
 const size_t max_labels_number = 10;
@@ -29,7 +29,8 @@ struct assembler_info
     bool end;
     int code[max_byte_code_len]; // do it as a dynamic array (after)
     proc_commands cmd;
-    db_mode debug_mode;
+    md_t debug_mode;
+    md_t listing_mode;
 };
 
 struct debug_info

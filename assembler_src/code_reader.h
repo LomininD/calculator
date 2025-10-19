@@ -5,9 +5,9 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include "../processor_src/processor_properties.h"
+#include "../shared/processor_properties.h"
 #include "../processor_src/stack/font_styles.h"
-#include "assembler_properties.h"
+#include "../shared/assembler_properties.h"
 
 err_t read_arg(char* file_name, assembler_info* asm_data, int current_line, arg_t arg_type);
 err_t read_number_arg(char* file_name, assembler_info* asm_data, int current_line);
