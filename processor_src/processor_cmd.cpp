@@ -8,18 +8,20 @@ err_t proc_push(proc_info* proc)
 {
     assert(proc != NULL);
 
-    printf("execute_cmd: began push\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began push\n");
     int number = proc->code[++proc->ip];
     st_return_err pushed = st_push(&proc->st, number);
 
     if (pushed != no_error)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " push failed\n");
+        printf_err(debug_mode, "[from execute_cmd] -> push failed\n");
         return error;
     }
 
     st_dump(&proc->st);
-    printf("execute_cmd: push succeeded\n");
+    printf_log_msg(debug_mode, "execute_cmd: push succeeded\n");
     proc->ip++;
     return ok;
 }
@@ -29,13 +31,15 @@ err_t proc_popreg(proc_info* proc)
 {
     assert(proc != NULL);
 
-    printf("execute_cmd: began popreg\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began popreg\n");
 
     int reg = proc->code[++proc->ip];
 
     if (reg < 0 || reg >= register_amount)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " popreg failed (got non-existent register index %d)\n", reg);
+        printf_err(debug_mode, "[from execute_cmd] -> popreg failed (got non-existent register index %d)\n", reg);
         return error;
     }
 
@@ -44,12 +48,12 @@ err_t proc_popreg(proc_info* proc)
 
     if (got_number != no_error)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " popreg failed (not enough data in stack)\n");
+        printf_err(debug_mode, "[from execute_cmd] -> popreg failed (not enough data in stack)\n");
         return error;
     }
 
     proc->registers[reg] = number;
-    printf("execute_cmd: popreg succeeded\n");
+    printf_log_msg(debug_mode, "execute_cmd: popreg succeeded\n");
     st_dump(&proc->st);
     proc->ip++;
 
@@ -61,13 +65,15 @@ err_t proc_pushreg(proc_info* proc)
 {
     assert(proc != NULL);
 
-    printf("execute_cmd: began pushreg\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began pushreg\n");
 
     int reg = proc->code[++proc->ip];
 
     if (reg < 0 || reg >= register_amount)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " pushreg failed (got non-existent register index %d)\n", reg);
+        printf_err(debug_mode, "[from execute_cmd] -> pushreg failed (got non-existent register index %d)\n", reg);
         return error;
     }
 
@@ -75,11 +81,11 @@ err_t proc_pushreg(proc_info* proc)
 
     if (pushed != no_error)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " pushreg failed (could not push data to stack)\n");
+        printf_err(debug_mode, "[from execute_cmd] -> pushreg failed (could not push data to stack)\n");
         return error;
     }
 
-    printf("execute_cmd: pushreg succeeded\n");
+    printf_log_msg(debug_mode, "execute_cmd: pushreg succeeded\n");
     st_dump(&proc->st);
     proc->ip++;
 
@@ -91,8 +97,10 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
 {
     assert(proc != NULL);
 
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
     const char* cmd_name = decode_cmd(cmd);
-    printf("execute_cmd: began %s \n", cmd_name);
+    printf_log_msg(debug_mode, "execute_cmd: began %s \n", cmd_name);
 
     int a = 0;
     int b = 0;
@@ -128,7 +136,7 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
         case DIV:
             if (a == 0)
             {
-                printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " div failed - division by zero\n");
+                printf_err(debug_mode, "[from execute_cmd] -> div failed - division by zero\n");
                 return error;
             }
 
@@ -138,7 +146,7 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
         case SQRT:
             if (a < 0)
             {
-                printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " sqrt failed - cannot determine root of negative number\n");
+                printf_err(debug_mode, "[from execute_cmd] -> sqrt failed - cannot determine root of negative number\n");
                 return error;
             }
 
@@ -152,17 +160,17 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
 
         if (pushed != no_error)
         {
-            printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (failed to push the result)\n", cmd_name);
+            printf_err(debug_mode, "[from execute_cmd] -> %s failed (failed to push the result)\n", cmd_name);
             return error;
         }
 
         st_dump(&proc->st);
-        printf("execute_cmd: %s succeeded, result = %d\n", cmd_name, res);
+        printf_log_msg(debug_mode, "execute_cmd: %s succeeded, result = %d\n", cmd_name, res);
         proc->ip++;
         return ok;
     }
 
-    printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (not enough data in stack)\n", cmd_name);
+    printf_err(debug_mode, "[from execute_cmd] -> %s failed (not enough data in stack)\n", cmd_name);
     return error;
 }
 
@@ -171,15 +179,17 @@ err_t proc_in(proc_info* proc)
 {
     assert(proc != NULL);
 
-    printf("execute_cmd: began in\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began in\n");
 
     int number = 0;
 
-    err_t got_number = get_number(&number);
+    err_t got_number = get_number(&number, debug_mode);
 
     if (got_number != ok)
     {
-        printf("execute_cmd: in failed\n");
+        printf_log_msg(debug_mode, "execute_cmd: in failed\n");
         return error;
     }
 
@@ -187,18 +197,18 @@ err_t proc_in(proc_info* proc)
 
     if (pushed != no_error)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " in failed (could not push read value to stack)\n");
+        printf_err(debug_mode, "[from execute_cmd] -> in failed (could not push read value to stack)\n");
         return error;
     }
 
     st_dump(&proc->st);
-    printf("execute_cmd: in succeeded\n");
+    printf_log_msg(debug_mode, "execute_cmd: in succeeded\n");
     proc->ip++;
     return ok;
 }
 
 
-err_t get_number(int* number)
+err_t get_number(int* number, md_t debug_mode)
 {
     char str_number[11] = {};
     // max number len is 9 symbols 10 symbols are read to check if number is overflowed
@@ -208,17 +218,17 @@ err_t get_number(int* number)
 
     if (str_number[9] != '\0' && str_number[9] != '\n')
     {
-        printf("get_number: " MAKE_BOLD_RED("ERROR:") " number is too big\n");
+        printf_err(debug_mode, "[from get_number] -> number is too big\n");
         return error;
     }
 
     if (scanned != 1)
     {
-        printf("get_number: " MAKE_BOLD_RED("ERROR:") " the input value is not a number\n");
+        printf_err(debug_mode, "[from get_number] -> the input value is not a number\n");
         return error;
     }
 
-    printf("get_number: scanned number  = %d\n", *number);
+    printf_log_msg(debug_mode, "get_number: scanned number  = %d\n", *number);
     return ok;
 }
 
@@ -227,19 +237,21 @@ err_t proc_out(proc_info* proc)
 {
     assert(proc != NULL);
 
-    printf("execute_cmd: began out\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began out\n");
 
     int el = 0;
     st_return_err got_el = st_pop(&proc->st, &el);
 
     if (got_el != no_error)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " out failed (not enough data in stack)\n");
+        printf_err(debug_mode, "[from execute_cmd] -> out failed (not enough data in stack)\n");
         return error;
     }
 
     printf("%d\n", el);
-    printf("execute_cmd: out succeeded\n");
+    printf_log_msg(debug_mode, "execute_cmd: out succeeded (%d)\n", el);
     proc->ip++;
     return ok;
 }
@@ -249,18 +261,20 @@ err_t proc_jmp(proc_info* proc)
 {
     assert(proc != NULL);
 
-    printf("execute_cmd: began jmp\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began jmp\n");
 
     size_t new_pointer = proc->code[++proc->ip];
     proc->ip = new_pointer;
 
     if (new_pointer >= proc->prg_size || new_pointer < 0)
     {
-        printf("proc_jmp: " MAKE_BOLD_RED("ERROR:") " new IP points on a non-existed position in code\n");
+        printf_err(debug_mode, "[from proc_jmp] -> new IP points on a non-existed position in code\n");
         return error;
     }
 
-    printf("execute_cmd: done jmp (new_position = %zu)\n", new_pointer);
+    printf_log_msg(debug_mode, "execute_cmd: done jmp (new_position = %zu)\n", new_pointer);
     return ok;
 }
 
@@ -269,9 +283,11 @@ err_t proc_cond_jmp(proc_info* proc, proc_commands cmd)
 {
     assert(proc != NULL);
 
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
     const char* cmd_name = decode_cmd(cmd);
 
-    printf("execute_cmd: began conditional jmp (%s)\n", cmd_name);
+    printf_log_msg(debug_mode, "execute_cmd: began conditional jmp (%s)\n", cmd_name);
 
     int a = 0;
     int b = 0;
@@ -280,7 +296,7 @@ err_t proc_cond_jmp(proc_info* proc, proc_commands cmd)
 
     if (got_a != no_error || got_b != no_error)
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (not enough data in stack)\n", cmd_name);
+        printf_err(debug_mode, "[from execute_cmd] -> %s failed (not enough data in stack)\n", cmd_name);
         return error;
     }
 
@@ -288,18 +304,18 @@ err_t proc_cond_jmp(proc_info* proc, proc_commands cmd)
 
     if (is_fulfilled)
     {
-        printf("proc_cond_jmp: condition is fulfilled\n");
+        printf_log_msg(debug_mode, "proc_cond_jmp: condition is fulfilled\n");
         err_t jumped = proc_jmp(proc);
         if (jumped != ok)
             return error;
     }
     else
     {
-        printf("proc_cond_jmp: condition is not fulfilled\n");
+        printf_log_msg(debug_mode, "proc_cond_jmp: condition is not fulfilled\n");
         proc->ip += 2;
     }
 
-    printf("execute_cmd: done conditional jmp (%s)\n", cmd_name);
+    printf_log_msg(debug_mode, "execute_cmd: done conditional jmp (%s)\n", cmd_name);
     return ok;
 }
 

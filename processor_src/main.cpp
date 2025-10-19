@@ -1,8 +1,10 @@
 #include "processor_cmd.h"
 #include "processor.h"
-#include "processor_init.h" // remove ASAP
+#include "processor_init.h"
 
 // *1000 to work with floats (add mode -f)
+// TODO: calloc
+// TODO: log for stack
 
 int main(int argc, char* argv[])
 {
@@ -19,11 +21,11 @@ int main(int argc, char* argv[])
     err_t initialised = proc_ctor(proc);
 
     if (initialised != ok)
-        END_PROCESS;
+        END_PROCESS(spu.proc_modes.debug_mode);
 
     err_t is_read = read_byte_code(proc);
     if (is_read != ok)
-        END_PROCESS;
+        END_PROCESS(spu.proc_modes.debug_mode);
 
     proc_commands current_cmd = UNKNOWN;
 
@@ -40,7 +42,7 @@ int main(int argc, char* argv[])
         err_t executed = execute_cmd(proc, current_cmd);
 
         if (executed != ok)
-            END_PROCESS;
+            END_PROCESS(spu.proc_modes.debug_mode);
 
         if (current_cmd == HLT)
             break;
@@ -48,7 +50,7 @@ int main(int argc, char* argv[])
         getchar();
     }
 
-    printf("main: shutting down processor\n");
     proc_dtor(proc);
+    printf("main: shutting down processor\n");
     return 0;
 }

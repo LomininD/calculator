@@ -6,7 +6,6 @@ err_t parse_args(int argc, char* argv[], proc_info* proc)
     assert(argv != NULL);
     assert(proc != NULL);
 
-    md_t debug_mode = proc->proc_modes.debug_mode;
     bool got_byte_code_file = false;
 
     for (int i = 1; i < argc; ++i)
@@ -25,10 +24,22 @@ err_t parse_args(int argc, char* argv[], proc_info* proc)
         }
     }
 
+    if (proc->proc_modes.debug_mode == on)
+    {
+        log_ptr = fopen("spu_log.txt", "w");
+    }
+
     if (!got_byte_code_file)
     {
         printf(MAKE_BOLD_RED("ERROR:") " required file was not provided\n");
         printf(MAKE_GREY("Note: for more info add -h flag.\n"));
+        return error;
+    }
+
+    if (proc->byte_code_file == NULL || (proc->proc_modes.debug_mode == on && log_ptr == NULL))
+    {
+        printf(MAKE_BOLD_RED("ERROR:") " could not open the file\n");
+        printf(MAKE_GREY("Note: file name may be incorrect\n"));
         return error;
     }
 
@@ -73,13 +84,6 @@ err_t open_file(char* file_name, proc_info* proc, bool* got_byte_code_file)
     {
         proc->byte_code_file = fopen(file_name, "r");
         *got_byte_code_file = true;
-
-        if (proc->byte_code_file == NULL)
-        {
-            printf(MAKE_BOLD_RED("ERROR:") " could not open the file\n");
-            printf(MAKE_GREY("Note: file name may be incorrect\n"));
-            return error;
-        }
     }
     else
     {
@@ -101,16 +105,16 @@ void launch_help(void)
 }
 
 
-err_t prepare_file(FILE* fp)
+err_t prepare_file(FILE* fp, md_t debug_mode)
 {
     assert(fp != NULL);
 
-    err_t signature_ok = check_file_signature(fp);
+    err_t signature_ok = check_file_signature(fp, debug_mode);
 
     if (signature_ok != ok)
         return error;
 
-    err_t version_ok = check_file_version(fp);
+    err_t version_ok = check_file_version(fp, debug_mode);
 
     if (version_ok != ok)
         return error;
@@ -122,7 +126,7 @@ err_t prepare_file(FILE* fp)
 }
 
 
-err_t check_file_signature(FILE* fp)
+err_t check_file_signature(FILE* fp, md_t debug_mode)
 {
     assert(fp != NULL);
 
@@ -141,18 +145,18 @@ err_t check_file_signature(FILE* fp)
 
     if (correct_symbols == 3)
     {
-        printf("check_file_signature: file signature verified\n");
+        printf_log_msg(debug_mode, "check_file_signature: file signature verified\n");
         return ok;
     }
     else
     {
-        printf("check_file_signature: " MAKE_BOLD_RED("ERROR:") " wrong file signature\n");
+        printf_err(debug_mode, "[from check_file_signature] -> wrong file signature\n");
         return error;
     }
 }
 
 
-err_t check_file_version(FILE* fp)
+err_t check_file_version(FILE* fp, md_t debug_mode)
 {
     assert(fp != NULL);
 
@@ -160,23 +164,23 @@ err_t check_file_version(FILE* fp)
     fscanf(fp, "%d", &file_version);
     if (file_version < version)
     {
-        printf("check_file_version: " MAKE_BOLD_RED("ERROR:") " assembly version is old\n");
+        printf_err(debug_mode, "[from check_file_version] -> assembly version is old\n");
         return error;
     }
     else if (file_version > version)
     {
-        printf("check_file_version: " MAKE_BOLD_RED("ERROR:") " processor version is old\n");
+        printf_err(debug_mode, "[from check_file_version] -> processor version is old\n");
         return error;
     }
     else
     {
-        printf("check_file_version: assembly version verified\n");
+        printf_log_msg(debug_mode, "check_file_version: assembly version verified\n");
         return ok;
     }
 }
 
 
-err_t initialise_stack(size_t capacity, st_t* st)
+err_t initialise_stack(size_t capacity, st_t* st, md_t debug_mode)
 {
     assert(st != NULL);
 
@@ -184,12 +188,12 @@ err_t initialise_stack(size_t capacity, st_t* st)
 
     if (created == no_error)
     {
-        printf("initialise_stack: stack created\n");
+        printf_log_msg(debug_mode, "initialise_stack: stack created\n");
         return ok;
     }
     else
     {
-        printf("initialise_stack: problem occurred while creating stack\n");
+        printf_err(debug_mode, "[from initialise_stack] -> problem occurred while creating stack\n");
         return error;
     }
 }

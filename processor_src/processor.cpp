@@ -6,28 +6,28 @@
 #include "processor.h"
 #include "processor_init.h"
 
-// make printf macros for debug
-// TODO: split output streams ???
 
 err_t proc_ctor(proc_info* proc)
 {
     assert(proc != NULL);
 
-    printf("proc_ctor: began initialising processor\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "proc_ctor: began initialising processor\n");
 
     size_t capacity = 10;
-    err_t initialised = initialise_stack(capacity, &(proc->st));
+    err_t initialised = initialise_stack(capacity, &(proc->st), debug_mode);
     if (initialised != ok)
         return error;
 
     proc->ip = 0;
     proc->prg_size = 0;
 
-    err_t prepared = prepare_file(proc->byte_code_file);
+    err_t prepared = prepare_file(proc->byte_code_file, debug_mode);
     if (prepared != ok)
         return error;
 
-    printf("proc_ctor: processor initialised\n\n");
+    printf_log_msg(debug_mode, "proc_ctor: processor initialised\n\n");
     return ok;
 }
 
@@ -40,7 +40,9 @@ err_t read_byte_code(proc_info* proc)
 
     assert(fp != NULL);
 
-    printf("started reading\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "started reading\n");
 
     int cmd = 0;
     int i = 0;
@@ -55,17 +57,16 @@ err_t read_byte_code(proc_info* proc)
 
         if (i == max_byte_code_len)
         {
-            printf("read_code: max byte code len exceeded\n");
+            printf_err(debug_mode, "[from read_byte_code] -> max byte code len exceeded\n");
             return error;
         }
 
-        //printf("scanned_cmd: %d\n", cmd);
+        printf_log_msg(debug_mode, "scanned_cmd: %d\n", cmd);
         proc->prg_size++;
         proc->code[i] = cmd;
         i++;
     }
 
-    //printf("prg_size: %zu\n", prg_size);
     return ok;
 }
 
@@ -115,7 +116,7 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
             break;
 
         default:
-            printf("execute_cmd: unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, proc->ip);
+            printf_err(proc->proc_modes.debug_mode, "[from execute_cmd] -> unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, proc->ip);
     }
 
     return executed;
@@ -149,22 +150,28 @@ err_t proc_dtor(proc_info* proc)
 
     assert(fp != NULL);
 
-    printf("proc_dtor: began termination\n");
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "proc_dtor: began termination\n");
 
     st_return_err terminated = st_dtor(&proc->st);
 
     if (terminated == no_error)
     {
-        printf("proc_dtor: stack destroyed\n");
+        printf_log_msg(debug_mode, "proc_dtor: stack destroyed\n");
     }
     else
     {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " hlt failed\n");
+        printf_err(debug_mode, "[from execute_cmd] -> dtor failed\n");
         return error;
     }
 
     fclose(fp);
-    printf("proc_dtor: done termination\n");
+    printf_log_msg(debug_mode, "proc_dtor: done termination\n");
+
+    if (proc->proc_modes.debug_mode == on)
+        fclose(log_ptr);
+
     return ok;
 }
 
