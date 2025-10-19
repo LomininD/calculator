@@ -41,8 +41,4 @@ struct debug_info
     bool not_empty;
 };
 
-#define $$ fprintf(stderr, "line: %d\n", __LINE__);
-
-#define $$$(...) { fprintf(stderr, "%s... ", #__VA_ARGS__); __VA_ARGS__; fprintf(stderr, "done\n"); }
-
 #endif

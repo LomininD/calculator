@@ -1,8 +1,8 @@
 #include <math.h>
-
 #include "stack/stack_dump.h"
 #include "processor_cmd.h"
 
+// think about refactoring this file
 
 err_t proc_push(proc_info* proc)
 {
@@ -12,18 +12,16 @@ err_t proc_push(proc_info* proc)
     int number = proc->code[++proc->ip];
     st_return_err pushed = st_push(&proc->st, number);
 
-    if (pushed == no_error)
-    {
-        st_dump(&proc->st);
-        printf("execute_cmd: push succeeded\n");
-        proc->ip++;
-        return ok;
-    }
-    else
+    if (pushed != no_error)
     {
         printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " push failed\n");
         return error;
     }
+
+    st_dump(&proc->st);
+    printf("execute_cmd: push succeeded\n");
+    proc->ip++;
+    return ok;
 }
 
 
@@ -100,32 +98,34 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
     int b = 0;
     st_return_err got_a = no_error;
     st_return_err got_b = no_error;
+
+    if (cmd != SQRT)
+    {
+        got_a = st_pop(&proc->st, &a);
+        got_b = st_pop(&proc->st, &b);
+    }
+    else
+    {
+        got_a = st_pop(&proc->st, &a);
+    }
+
     int res = 0;
 
     switch(cmd)
     {
         case ADD:
-            got_a = st_pop(&proc->st, &a);
-            got_b = st_pop(&proc->st, &b);
             res = a + b;
             break;
 
         case SUB:
-            got_a = st_pop(&proc->st, &a);
-            got_b = st_pop(&proc->st, &b);
             res = b - a;
             break;
 
         case MULT:
-            got_a = st_pop(&proc->st, &a);
-            got_b = st_pop(&proc->st, &b);
             res = a * b;
             break;
 
         case DIV:
-            got_a = st_pop(&proc->st, &a);
-            got_b = st_pop(&proc->st, &b);
-
             if (a == 0)
             {
                 printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " div failed - division by zero\n");
@@ -136,8 +136,6 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
             break;
 
         case SQRT:
-            got_a = st_pop(&proc->st, &a);
-
             if (a < 0)
             {
                 printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " sqrt failed - cannot determine root of negative number\n");
@@ -151,24 +149,21 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
     if (got_a == no_error && got_b == no_error)
     {
         st_return_err pushed = st_push(&proc->st, res);
-        if (pushed == no_error)
-        {
-            st_dump(&proc->st);
-            printf("execute_cmd: %s succeeded, result = %d\n", cmd_name, res);
-            proc->ip++;
-            return ok;
-        }
-        else
+
+        if (pushed != no_error)
         {
             printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (failed to push the result)\n", cmd_name);
             return error;
         }
+
+        st_dump(&proc->st);
+        printf("execute_cmd: %s succeeded, result = %d\n", cmd_name, res);
+        proc->ip++;
+        return ok;
     }
-    else
-    {
-        printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (not enough data in stack)\n", cmd_name);
-        return error;
-    }
+
+    printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " %s failed (not enough data in stack)\n", cmd_name);
+    return error;
 }
 
 
@@ -182,7 +177,7 @@ err_t proc_in(proc_info* proc)
 
     err_t got_number = get_number(&number);
 
-    if (got_number != ok) // -1 if big numbers
+    if (got_number != ok)
     {
         printf("execute_cmd: in failed\n");
         return error;
@@ -190,22 +185,20 @@ err_t proc_in(proc_info* proc)
 
     st_return_err pushed = st_push(&proc->st, number);
 
-    if (pushed == no_error)
-    {
-        st_dump(&proc->st);
-        printf("execute_cmd: in succeeded\n");
-        proc->ip++;
-        return ok;
-    }
-    else
+    if (pushed != no_error)
     {
         printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " in failed (could not push read value to stack)\n");
         return error;
     }
+
+    st_dump(&proc->st);
+    printf("execute_cmd: in succeeded\n");
+    proc->ip++;
+    return ok;
 }
 
 
-err_t get_number(int* number) // refactor
+err_t get_number(int* number)
 {
     char str_number[11] = {};
     // max number len is 9 symbols 10 symbols are read to check if number is overflowed
@@ -213,7 +206,7 @@ err_t get_number(int* number) // refactor
     fgets(str_number, 11, stdin);
     int scanned = sscanf(str_number, "%d%s", number, bad_symbols);
 
-    if (str_number[9] != '\0' && str_number[9] != '\n') // 999999999 is not working EOF \n
+    if (str_number[9] != '\0' && str_number[9] != '\n')
     {
         printf("get_number: " MAKE_BOLD_RED("ERROR:") " number is too big\n");
         return error;
@@ -225,7 +218,7 @@ err_t get_number(int* number) // refactor
         return error;
     }
 
-    printf("get_number: scanned number  = %d\n", * number);
+    printf("get_number: scanned number  = %d\n", *number);
     return ok;
 }
 
@@ -239,18 +232,16 @@ err_t proc_out(proc_info* proc)
     int el = 0;
     st_return_err got_el = st_pop(&proc->st, &el);
 
-    if (got_el == no_error)
-    {
-        printf("%d\n", el);
-        printf("execute_cmd: out succeeded\n");
-        proc->ip++;
-        return ok;
-    }
-    else
+    if (got_el != no_error)
     {
         printf("execute_cmd: " MAKE_BOLD_RED("ERROR:") " out failed (not enough data in stack)\n");
         return error;
     }
+
+    printf("%d\n", el);
+    printf("execute_cmd: out succeeded\n");
+    proc->ip++;
+    return ok;
 }
 
 

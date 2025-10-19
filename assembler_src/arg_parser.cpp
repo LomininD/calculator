@@ -131,8 +131,9 @@ void launch_help(void)
     printf(MAKE_BOLD("===ASSEMBLER HELP===\n\n"));
     printf("Input file name is required for assembler.\n\n");
     printf("Possible flags:\n");
-    printf("-d: debug mode\n");
+    printf("-d: debug mode (log stored in asm_log.txt)\n");
     printf("-o: define output file name after flags\n");
+    printf("-l: makes listing file (listing.lst) (not finished yet)\n");
     printf("-h: prints help information\n\n");
     printf("If output file is undefined, the file with same name but .out extention will be created.\n");
 }
@@ -148,7 +149,6 @@ err_t verify_file_names(files_info* files, parser_struct* verification)
         printf(MAKE_GREY("Note: for more info add -h flag.\n"));
         return error;
     }
-    printf("aaaaa\n");
     return ok;
 }
 

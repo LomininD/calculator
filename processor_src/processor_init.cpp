@@ -1,0 +1,197 @@
+#include "processor_init.h"
+
+
+err_t parse_args(int argc, char* argv[], proc_info* proc)
+{
+    assert(argv != NULL);
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+    bool got_byte_code_file = false;
+
+    for (int i = 1; i < argc; ++i)
+    {
+        if (argv[i][0] == '-')
+        {
+            err_t got_flags = parse_flags(argv[i], proc);
+            if (got_flags != ok)
+                return got_flags;
+        }
+        else
+        {
+            err_t opened = open_file(argv[i], proc, &got_byte_code_file);
+            if (opened != ok)
+                return error;
+        }
+    }
+
+    if (!got_byte_code_file)
+    {
+        printf(MAKE_BOLD_RED("ERROR:") " required file was not provided\n");
+        printf(MAKE_GREY("Note: for more info add -h flag.\n"));
+        return error;
+    }
+
+    return ok;
+}
+
+err_t parse_flags(char flag_str[], proc_info* proc)
+{
+    assert(proc != NULL);
+
+    int ind = 1;
+    while(flag_str[ind] != '\0')
+    {
+        if (flag_str[ind] == 'd')
+        {
+            proc->proc_modes.debug_mode = on;
+        }
+        else if (flag_str[ind] == 'h')
+        {
+            launch_help();
+            return help;
+        }
+        else
+        {
+            printf(MAKE_BOLD_RED("ERROR:") " wrong flag(s)\n");
+            printf(MAKE_GREY("Note: for more info add -h flag.\n"));
+            return error;
+        }
+        ind++;
+    }
+    return ok;
+}
+
+
+err_t open_file(char* file_name, proc_info* proc, bool* got_byte_code_file)
+{
+    assert(file_name != NULL);
+    assert(proc != NULL);
+    assert(got_byte_code_file != NULL);
+
+    if (!*got_byte_code_file)
+    {
+        proc->byte_code_file = fopen(file_name, "r");
+        *got_byte_code_file = true;
+
+        if (proc->byte_code_file == NULL)
+        {
+            printf(MAKE_BOLD_RED("ERROR:") " could not open the file\n");
+            printf(MAKE_GREY("Note: file name may be incorrect\n"));
+            return error;
+        }
+    }
+    else
+    {
+        printf(MAKE_BOLD_RED("ERROR:") "got too many files\n");
+        printf(MAKE_GREY("Note: for more info add -h flag.\n"));
+        return error;
+    }
+    return ok;
+}
+
+
+void launch_help(void)
+{
+    printf(MAKE_BOLD("===PROCESSOR HELP===\n\n"));
+    printf("Byte code file name is required for processor.\n\n");
+    printf("Possible flags:\n");
+    printf("-d: debug mode\n");
+    printf("-h: prints help information\n");
+}
+
+
+err_t prepare_file(FILE* fp)
+{
+    assert(fp != NULL);
+
+    err_t signature_ok = check_file_signature(fp);
+
+    if (signature_ok != ok)
+        return error;
+
+    err_t version_ok = check_file_version(fp);
+
+    if (version_ok != ok)
+        return error;
+
+    int prg_size = 0;
+    fscanf(fp, "%d", &prg_size);
+
+    return ok;
+}
+
+
+err_t check_file_signature(FILE* fp)
+{
+    assert(fp != NULL);
+
+    int c = 0;
+    int correct_symbols = 0;
+
+    fscanf(fp, "%d", &c);
+    if (c == 'L')
+        correct_symbols++;
+    fscanf(fp, "%d", &c);
+    if (c == 'M')
+        correct_symbols++;
+    fscanf(fp, "%d", &c);
+    if (c == 'D')
+        correct_symbols++;
+
+    if (correct_symbols == 3)
+    {
+        printf("check_file_signature: file signature verified\n");
+        return ok;
+    }
+    else
+    {
+        printf("check_file_signature: " MAKE_BOLD_RED("ERROR:") " wrong file signature\n");
+        return error;
+    }
+}
+
+
+err_t check_file_version(FILE* fp)
+{
+    assert(fp != NULL);
+
+    int file_version = 0;
+    fscanf(fp, "%d", &file_version);
+    if (file_version < version)
+    {
+        printf("check_file_version: " MAKE_BOLD_RED("ERROR:") " assembly version is old\n");
+        return error;
+    }
+    else if (file_version > version)
+    {
+        printf("check_file_version: " MAKE_BOLD_RED("ERROR:") " processor version is old\n");
+        return error;
+    }
+    else
+    {
+        printf("check_file_version: assembly version verified\n");
+        return ok;
+    }
+}
+
+
+err_t initialise_stack(size_t capacity, st_t* st)
+{
+    assert(st != NULL);
+
+    st_return_err created = st_ctor(st, capacity);
+
+    if (created == no_error)
+    {
+        printf("initialise_stack: stack created\n");
+        return ok;
+    }
+    else
+    {
+        printf("initialise_stack: problem occurred while creating stack\n");
+        return error;
+    }
+}
+
+

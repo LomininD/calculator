@@ -1,31 +1,27 @@
 #include "processor_cmd.h"
 #include "processor.h"
+#include "processor_init.h" // remove ASAP
 
-// *1000 to work with floats
-
+// *1000 to work with floats (add mode -f)
 
 int main(int argc, char* argv[])
 {
+    proc_info spu = {};
+    proc_info* proc = &spu;
+
+    err_t parsed = parse_args(argc, argv, proc);
+
+    if (parsed != ok)
+        return 0;
+
     printf(MAKE_BOLD("+++ PROCESSOR +++\n\n"));
 
-    FILE* fp = NULL;
-
-    err_t opened = open_file(&fp, argc, argv);
-
-    if (opened != ok)
-    {
-        printf("main: terminating process due to error\n");
-        return 0;
-    }
-
-    proc_info spu = {};
-    err_t initialised = proc_ctor(fp, &spu);
-    proc_info* proc = &spu;
+    err_t initialised = proc_ctor(proc);
 
     if (initialised != ok)
         END_PROCESS;
 
-    err_t is_read = read_byte_code(fp, proc);
+    err_t is_read = read_byte_code(proc);
     if (is_read != ok)
         END_PROCESS;
 
@@ -41,7 +37,7 @@ int main(int argc, char* argv[])
             break;
         }
 
-        err_t executed = execute_cmd(&spu, current_cmd);
+        err_t executed = execute_cmd(proc, current_cmd);
 
         if (executed != ok)
             END_PROCESS;
@@ -53,6 +49,6 @@ int main(int argc, char* argv[])
     }
 
     printf("main: shutting down processor\n");
-    proc_dtor(fp, &spu);
+    proc_dtor(proc);
     return 0;
 }
