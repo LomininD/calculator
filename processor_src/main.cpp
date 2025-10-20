@@ -4,7 +4,6 @@
 
 // *1000 to work with floats (add mode -f)
 // TODO: calloc
-// TODO: log for stack
 // TODO: dmp
 // TODO: processor heading
 
@@ -21,6 +20,8 @@ int main(int argc, char* argv[])
     md_t debug_mode = spu.proc_modes.debug_mode;
 
     printf(MAKE_BOLD("+++ PROCESSOR +++\n\n"));
+    printf("version: %d\n", version);
+    printf("designed by LMD (c) \n\n", NULL);
 
     err_t initialised = proc_ctor(proc);
 

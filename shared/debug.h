@@ -32,6 +32,23 @@ while(0)
 }                                               \
 while(0)
 
+#define printf_log_grey(mode, text, ...) do{                                \
+    if (mode == on)                                                         \
+    {                                                                       \
+        printf(MAKE_GREY(text), __VA_ARGS__);                               \
+        fprintf(log_ptr, text, __VA_ARGS__);                                \
+    }                                                                       \
+}                                                                           \
+while(0)
+
+#define printf_log_bold(mode, text, ...) do{                                \
+    if (mode == on)                                                         \
+    {                                                                       \
+        printf(MAKE_BOLD(text), __VA_ARGS__);                               \
+        fprintf(log_ptr, text, __VA_ARGS__);                                \
+    }                                                                       \
+}                                                                           \
+while(0)
 
 #define printf_err(mode, ...) do{                                             \
     printf_empty_line(mode);                                                  \
@@ -52,12 +69,6 @@ while(0)
 #define printf_note(mode, text, ...) do{           \
     printf(MAKE_GREY(text), __VA_ARGS__);          \
 }                                                  \
-while(0)
-
-#define printf_log_grey(mode, text, ...) do{                                \
-    if (mode == on)                                                         \
-        fprintf(log_ptr, text, __VA_ARGS__);                                 \
-}                                                                           \
 while(0)
 
 #define printf_abortion(mode, ...) do{                                      \

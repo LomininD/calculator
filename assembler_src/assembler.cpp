@@ -124,6 +124,8 @@ err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line)
 
             asm_data->cmd = possible_cmd[i].cmd_code;
             asm_data->code[asm_data->pos + preamble_size] = possible_cmd[i].cmd_code;
+            printf_log_msg(debug_mode, "determine_cmd: code[%zu] = %d\n", asm_data->pos + preamble_size, possible_cmd[i].cmd_code);
+
             asm_data->pos++;
 
             err_t is_read = read_arg(file_name, asm_data, current_line, possible_cmd[i].arg_type);

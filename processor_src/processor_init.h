@@ -11,7 +11,7 @@ err_t parse_flags(char flag_str[], proc_info* proc);
 void launch_help(void);
 err_t open_file(char* file_name, proc_info* proc, bool* got_byte_code_file);
 
-err_t prepare_file(FILE* fp, md_t debug_mode);
+err_t prepare_file(proc_info* proc, md_t debug_mode);
 err_t check_file_signature(FILE* fp, md_t debug_mode);
 err_t check_file_version(FILE* fp, md_t debug_mode);
 err_t initialise_stack(size_t capacity, st_t* st, md_t debug_mode);

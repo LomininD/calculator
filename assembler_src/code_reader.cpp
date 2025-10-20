@@ -80,6 +80,7 @@ err_t read_number_arg(char* file_name, assembler_info* asm_data, int current_lin
     {
         printf_log_msg(debug_mode, "read_number_arg: recognised number %d\n", number);
         asm_data->code[asm_data->pos + preamble_size] = number;
+        printf_log_msg(debug_mode, "read_number_arg: code[%zu] = %d\n", asm_data->pos + preamble_size, number);
         asm_data->pos++;
         return ok;
     }
@@ -121,6 +122,7 @@ err_t read_string_arg(char* file_name, assembler_info* asm_data, int current_lin
         printf_log_msg(debug_mode, "read_string_arg: got register index: %d\n", number);
 
         asm_data->code[asm_data->pos + preamble_size] = number;
+        printf_log_msg(debug_mode, "read_string_arg: code[%zu] = %d\n", asm_data->pos + preamble_size, number);
         asm_data->pos++;
         return ok;
     }
@@ -191,6 +193,7 @@ err_t replace_label(char* file_name, assembler_info* asm_data, int current_line)
         int address = asm_data->labels[number];
 
         asm_data->code[asm_data->pos + preamble_size] = address;
+        printf_log_msg(debug_mode, "replace_label: code[%zu] = %d\n", asm_data->pos + preamble_size, address);
         asm_data->pos++;
 
         return ok;

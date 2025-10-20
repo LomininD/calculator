@@ -180,6 +180,10 @@ err_t open_files(files_info* files, parser_struct* verification, assembler_info*
         (asm_data->listing_mode == on && listing_ptr == NULL))
     {
         printf(MAKE_BOLD_RED("ERROR:") " a problem with opening files occurred\n");
+        printf("input file: %p\n", files->input_file);
+        printf("output file: %p\n", files->output_file);
+        printf("debug mode: %d, log file: %p\n", asm_data->debug_mode, log_ptr);
+        printf("listing_mode: %d, listing file: %p\n", asm_data->listing_mode, listing_ptr);
         printf(MAKE_GREY("Note: file name may be incorrect\n"));
         return error;
     }

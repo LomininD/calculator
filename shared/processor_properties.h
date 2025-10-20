@@ -20,13 +20,13 @@ struct proc_modes_type
 
 struct proc_info
 {
+    proc_modes_type proc_modes; // ?
     FILE* byte_code_file; // ?
     int code[max_byte_code_len]; // refactor using calloc and realloc or store file size in file
     size_t prg_size;
     st_t st;
     int registers[register_amount];
     size_t ip;
-    proc_modes_type proc_modes; // ?
 };
 
 enum proc_commands

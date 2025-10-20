@@ -23,7 +23,7 @@ err_t proc_ctor(proc_info* proc)
     proc->ip = 0;
     proc->prg_size = 0;
 
-    err_t prepared = prepare_file(proc->byte_code_file, debug_mode);
+    err_t prepared = prepare_file(proc, debug_mode);
     if (prepared != ok)
         return error;
 
@@ -62,7 +62,7 @@ err_t read_byte_code(proc_info* proc)
         }
 
         printf_log_msg(debug_mode, "scanned_cmd: %d\n", cmd);
-        proc->prg_size++;
+        //proc->prg_size++;
         proc->code[i] = cmd;
         i++;
     }
@@ -140,6 +140,14 @@ err_t check_ip(proc_info* proc)
     }
 }
 */
+
+
+void spu_dump(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    //printf_log_msg();
+}
 
 
 err_t proc_dtor(proc_info* proc)

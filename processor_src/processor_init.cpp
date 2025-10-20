@@ -105,9 +105,11 @@ void launch_help(void)
 }
 
 
-err_t prepare_file(FILE* fp, md_t debug_mode)
+err_t prepare_file(proc_info* proc, md_t debug_mode)
 {
-    assert(fp != NULL);
+    assert(proc != NULL);
+
+    FILE* fp = proc->byte_code_file;
 
     err_t signature_ok = check_file_signature(fp, debug_mode);
 
@@ -119,8 +121,7 @@ err_t prepare_file(FILE* fp, md_t debug_mode)
     if (version_ok != ok)
         return error;
 
-    int prg_size = 0;
-    fscanf(fp, "%d", &prg_size);
+    fscanf(fp, "%zu", &proc->prg_size);
 
     return ok;
 }

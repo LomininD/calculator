@@ -25,8 +25,6 @@ verifier_output st_verify(st_t* st)
         return not_verified;
     }
 
-    // pay attention to if order: some checks may be impossible
-
     if (st->data[0] != canary_value || st->data[st->capacity + 1] != canary_value)
     {
         st->error = canary_fault;
@@ -40,7 +38,6 @@ verifier_output st_verify(st_t* st)
     else
     {
         st_dump(st);
-        //printf("error num %d\n", found_errors);
         return not_verified;
     }
 }
@@ -81,14 +78,16 @@ void print_st_info(st_t* st)
 
     if (st != NULL)
     {
-        printf_log_msg(debug_mode, "stack  [%p]\n", st);
+        printf_log_bold(debug_mode, "stack", NULL);
+        printf_log_msg(debug_mode, "  [%p]\n", st);
         printf_log_msg(debug_mode, "{\n");
         printf_log_msg(debug_mode, "\tsize = %zu\n", st->size);
         printf_log_msg(debug_mode, "\tcapacity = %zu\n\n", st->capacity);
     }
     else
     {
-        printf_log_msg(debug_mode, "stack  [not found]\n");
+        printf_log_bold(debug_mode, "stack", NULL);
+        printf_log_msg(debug_mode, "  [not found]\n");
     }
 
     print_st_data(st);
