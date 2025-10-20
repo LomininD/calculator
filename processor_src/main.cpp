@@ -4,10 +4,6 @@
 
 // TODO: *1000 to work with floats (add mode -f)
 // TODO: calloc
-// TODO: DMP (in debug mode calls spu_dump()) (done)
-// TODO: implement dump in main (done)
-// TODO: remove excess stack dump (intrude in stack) (done)
-// TODO: call spu dmp in the beginning of program (done)
 
 int main(int argc, char* argv[])
 {

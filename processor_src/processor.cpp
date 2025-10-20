@@ -27,6 +27,8 @@ err_t proc_ctor(proc_info* proc)
     if (prepared != ok)
         return error;
 
+    proc->code = (int*) calloc(proc->prg_size, sizeof(int));
+
     printf_log_msg(debug_mode, "proc_ctor: processor initialised\n\n");
     return ok;
 }
@@ -171,6 +173,7 @@ err_t proc_dtor(proc_info* proc)
     }
 
     fclose(fp);
+    free(proc->code);
     printf_log_msg(debug_mode, "proc_dtor: done termination\n");
 
     if (proc->proc_modes.debug_mode == on)
