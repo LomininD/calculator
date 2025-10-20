@@ -1,0 +1,7 @@
+PUSH 1223
+PUSH -123
+OUT
+OUT
+OUT
+
+

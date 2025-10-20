@@ -115,6 +115,10 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
             executed = proc_cond_jmp(proc, cmd);
             break;
 
+        case DMP:
+            executed = proc_dmp(proc);
+            break;
+
         default:
             printf_err(proc->proc_modes.debug_mode, "[from execute_cmd] -> unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, proc->ip);
     }
@@ -140,14 +144,6 @@ err_t check_ip(proc_info* proc)
     }
 }
 */
-
-
-void spu_dump(proc_info* proc)
-{
-    assert(proc != NULL);
-
-    //printf_log_msg();
-}
 
 
 err_t proc_dtor(proc_info* proc)

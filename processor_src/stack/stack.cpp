@@ -64,7 +64,7 @@ st_return_err st_pop (st_t* st, st_data_type* el)
     {
         printf_err(st->debug_mode, "[from st_pop] -> pop failed, "
                                                 "no elements in stack\n");
-        st_dump(st);
+        //st_dump(st);
         return no_elements;
     }
 

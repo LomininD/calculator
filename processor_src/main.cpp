@@ -2,10 +2,12 @@
 #include "processor.h"
 #include "processor_init.h"
 
-// *1000 to work with floats (add mode -f)
+// TODO: *1000 to work with floats (add mode -f)
 // TODO: calloc
-// TODO: dmp
-// TODO: processor heading
+// TODO: DMP (in debug mode calls spu_dump()) (done)
+// TODO: implement dump in main (done)
+// TODO: remove excess stack dump (intrude in stack) (done)
+// TODO: call spu dmp in the beginning of program (done)
 
 int main(int argc, char* argv[])
 {
@@ -32,6 +34,9 @@ int main(int argc, char* argv[])
     if (is_read != ok)
         END_PROCESS(debug_mode);
 
+    if (debug_mode == on)
+        spu_dump(proc);
+
     proc_commands current_cmd = UNKNOWN;
 
     while (spu.ip < spu.prg_size)
@@ -55,6 +60,8 @@ int main(int argc, char* argv[])
         if (debug_mode == on)
             getchar();
     }
+
+    spu_dump(proc);
 
     proc_dtor(proc);
     printf_log_msg(debug_mode, "main: shutting down processor\n");

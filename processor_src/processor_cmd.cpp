@@ -320,6 +320,23 @@ err_t proc_cond_jmp(proc_info* proc, proc_commands cmd)
 }
 
 
+err_t proc_dmp(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began printing dump\n");
+
+    spu_dump(proc);
+
+    printf_log_msg(debug_mode, "execute_cmd: done printing dump\n");
+
+    proc->ip += 1;
+    return ok;
+}
+
+
 bool check_condition(proc_commands cmd, int a, int b)
 {
     switch(cmd)

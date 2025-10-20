@@ -7,7 +7,7 @@
 
 // if file is updated UPDATE VERSION
 
-const int version = 7;
+const int version = 8;
 const int max_byte_code_len = 1000;
 const int register_amount = 8;
 
@@ -49,6 +49,7 @@ enum proc_commands
     JAE,
     JE,
     JNE,
+    DMP,
     HLT,
 
     _cmd_count

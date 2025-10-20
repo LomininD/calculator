@@ -30,6 +30,8 @@ MULT
 SUB             ; finished calculating discriminant
 POPREG DX
 
+DMP             ; delete it
+
 PUSHREG DX
 PUSH 0
 JA :3           ; if D > 0

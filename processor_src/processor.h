@@ -5,6 +5,7 @@
 #include "stack/font_styles.h"
 #include "../shared/processor_properties.h"
 #include "processor_cmd.h"
+#include "processor_dump.h"
 
 err_t proc_ctor(proc_info* proc);
 err_t proc_dtor(proc_info* proc);
@@ -14,6 +15,7 @@ err_t read_byte_code(proc_info* proc);
 
 #define END_PROCESS(mode)                               \
 do{                                                     \
+    spu_dump(proc);                                     \
     printf_abortion(mode, "main\n");                    \
     proc_dtor(proc);                                    \
     return 0;                                           \

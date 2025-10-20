@@ -8,7 +8,7 @@ verifier_output st_verify(st_t* st)
 
     if (st == NULL)
     {
-        st_dump(st);
+        //st_dump(st);
         return not_verified;
     }
 
@@ -21,7 +21,7 @@ verifier_output st_verify(st_t* st)
     if (st->data == NULL)
     {
         st->error = no_data;
-        st_dump(st);
+        //st_dump(st);
         return not_verified;
     }
 
@@ -37,7 +37,7 @@ verifier_output st_verify(st_t* st)
     }
     else
     {
-        st_dump(st);
+        //st_dump(st);
         return not_verified;
     }
 }
@@ -48,7 +48,7 @@ void st_dump(st_t* st)
 {
     md_t debug_mode = st->debug_mode; // !
 
-    printf_log_msg(debug_mode, "-----------------------------------------------------------\n");
+    printf_log_msg(debug_mode, "-----------------------------------STACK DUMP-----------------------------------\n");
 
     if (st == NULL)
         printf_err(debug_mode, "[from verifier] -> " \
@@ -68,8 +68,7 @@ void st_dump(st_t* st)
 
         print_st_info(st);
     }
-
-    printf_log_msg(debug_mode, "-----------------------------------------------------------\n");
+    printf_log_msg(debug_mode, "--------------------------------------------------------------------------------\n");
 }
 
 void print_st_info(st_t* st)
