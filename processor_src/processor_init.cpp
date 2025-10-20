@@ -26,7 +26,7 @@ err_t parse_args(int argc, char* argv[], proc_info* proc)
 
     if (proc->proc_modes.debug_mode == on)
     {
-        log_ptr = fopen("spu_log.txt", "w");
+        log_ptr = fopen("spu_log.log", "w");
     }
 
     if (!got_byte_code_file)
@@ -100,7 +100,7 @@ void launch_help(void)
     printf(MAKE_BOLD("===PROCESSOR HELP===\n\n"));
     printf("Byte code file name is required for processor.\n\n");
     printf("Possible flags:\n");
-    printf("-d: debug mode\n");
+    printf("-d: debug mode (log stored in spu_log.log)\n");
     printf("-h: prints help information\n");
 }
 
@@ -184,7 +184,7 @@ err_t initialise_stack(size_t capacity, st_t* st, md_t debug_mode)
 {
     assert(st != NULL);
 
-    st_return_err created = st_ctor(st, capacity);
+    st_return_err created = st_ctor(st, capacity, debug_mode);
 
     if (created == no_error)
     {

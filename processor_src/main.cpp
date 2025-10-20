@@ -5,6 +5,8 @@
 // *1000 to work with floats (add mode -f)
 // TODO: calloc
 // TODO: log for stack
+// TODO: dmp
+// TODO: processor heading
 
 int main(int argc, char* argv[])
 {
@@ -16,16 +18,18 @@ int main(int argc, char* argv[])
     if (parsed != ok)
         return 0;
 
+    md_t debug_mode = spu.proc_modes.debug_mode;
+
     printf(MAKE_BOLD("+++ PROCESSOR +++\n\n"));
 
     err_t initialised = proc_ctor(proc);
 
     if (initialised != ok)
-        END_PROCESS(spu.proc_modes.debug_mode);
+        END_PROCESS(debug_mode);
 
     err_t is_read = read_byte_code(proc);
     if (is_read != ok)
-        END_PROCESS(spu.proc_modes.debug_mode);
+        END_PROCESS(debug_mode);
 
     proc_commands current_cmd = UNKNOWN;
 
@@ -35,22 +39,23 @@ int main(int argc, char* argv[])
 
         if (current_cmd == HLT)
         {
-            printf("main: got hlt\n");
+            printf_log_msg(debug_mode, "main: got hlt\n");
             break;
         }
 
         err_t executed = execute_cmd(proc, current_cmd);
 
         if (executed != ok)
-            END_PROCESS(spu.proc_modes.debug_mode);
+            END_PROCESS(debug_mode);
 
         if (current_cmd == HLT)
             break;
 
-        getchar();
+        if (debug_mode == on)
+            getchar();
     }
 
     proc_dtor(proc);
-    printf("main: shutting down processor\n");
+    printf_log_msg(debug_mode, "main: shutting down processor\n");
     return 0;
 }

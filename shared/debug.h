@@ -54,6 +54,12 @@ while(0)
 }                                                  \
 while(0)
 
+#define printf_log_grey(mode, text, ...) do{                                \
+    if (mode == on)                                                         \
+        fprintf(log_ptr, text, __VA_ARGS__);                                 \
+}                                                                           \
+while(0)
+
 #define printf_abortion(mode, ...) do{                                      \
     printf_empty_line(mode);                                                \
     printf(MAKE_BOLD_RED("aborting due to error: ") __VA_ARGS__);           \

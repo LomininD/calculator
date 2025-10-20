@@ -49,51 +49,51 @@ verifier_output st_verify(st_t* st)
 // st_dump checks if any errors were registered and sends log
 void st_dump(st_t* st)
 {
-    printf("-----------------------------------------------------------\n");
+    md_t debug_mode = st->debug_mode; // !
+
+    printf_log_msg(debug_mode, "-----------------------------------------------------------\n");
 
     if (st == NULL)
-        printf(MAKE_BOLD_RED("ERROR: ") "[from verifier] -> " \
+        printf_err(debug_mode, "[from verifier] -> " \
                                     " stack not found (got NULL pointer)\n");
     else
     {
         if (st->error == no_data)
-            printf(MAKE_BOLD_RED("ERROR: ") "[from verifier] -> "  \
+            printf_err(debug_mode, "[from verifier] -> "  \
                                 "stack data not found (got NULL pointer)\n\n");
 
         if (st->error == canary_fault)
-            printf(MAKE_BOLD_RED("UNAUTHORIZED ACCESS TO DATA: ") \
+            printf_err(debug_mode, "UNAUTHORIZED ACCESS TO DATA: " \
                             "[from verifier] -> canary protection triggered\n\n");
-            // if canary protection triggered should we print data in dump?
 
         if (st->error == stack_overflow)
-            printf(MAKE_BOLD_RED("ERROR: ") "[from verifier] -> stack overflow\n\n");
+            printf_err(debug_mode,  "[from verifier] -> stack overflow\n\n");
 
         print_st_info(st);
     }
 
-    printf("-----------------------------------------------------------\n");
+    printf_log_msg(debug_mode, "-----------------------------------------------------------\n");
 }
 
-// check(error) - gets binary error var and checks if requested
-// error has occurred using switch
 void print_st_info(st_t* st)
 {
+    md_t debug_mode = st->debug_mode;
 
     if (st != NULL)
     {
-        printf(MAKE_BOLD("stack") "  [%p]\n", st);
-        printf("{\n");
-        printf("\tsize = %zu\n", st->size);
-        printf("\tcapacity = %zu\n\n", st->capacity);
+        printf_log_msg(debug_mode, "stack  [%p]\n", st);
+        printf_log_msg(debug_mode, "{\n");
+        printf_log_msg(debug_mode, "\tsize = %zu\n", st->size);
+        printf_log_msg(debug_mode, "\tcapacity = %zu\n\n", st->capacity);
     }
     else
     {
-        printf(MAKE_BOLD("stack") "  [not found]\n");
+        printf_log_msg(debug_mode, "stack  [not found]\n");
     }
 
     print_st_data(st);
 
-    printf("}\n");
+    printf_log_msg(debug_mode, "}\n");
 }
 
 
@@ -101,12 +101,14 @@ void print_st_data(st_t* st)
 {
     assert(st != NULL);
 
+    md_t debug_mode = st->debug_mode;
+
     if (st->data != NULL)
         {
-            printf("\tdata  [%p]\n", st->data);
-            printf("\t{\n");
+            printf_log_msg(debug_mode, "\tdata  [%p]\n", st->data);
+            printf_log_msg(debug_mode, "\t{\n");
 
-            printf(MAKE_GREY("\t\t [0] = %x (canary protection)\n"), st->data[0]);
+            printf_log_grey(debug_mode, "\t\t [0] = %x (canary protection)\n", st->data[0]);
 
             if (st->error != stack_overflow)
             {
@@ -114,17 +116,17 @@ void print_st_data(st_t* st)
             }
             else
             {
-                printf("\t\t [overflowed]\n");
+                printf_log_msg(debug_mode, "\t\t [overflowed]\n");
             }
 
-            printf(MAKE_GREY("\t\t [%zu] = %x (canary protection)\n"),
+            printf_log_grey(debug_mode, "\t\t [%zu] = %x (canary protection)\n",
                                 st->capacity + 1, st->data[st->capacity+1]);
 
-            printf("\t}\n");
+            printf_log_msg(debug_mode, "\t}\n");
         }
         else
         {
-            printf("\tdata  [not found]\n");
+            printf_log_msg(debug_mode, "\tdata  [not found]\n");
         }
 }
 
@@ -132,25 +134,27 @@ void print_st_values(st_t* st)
 {
     assert(st != NULL);
 
+    md_t debug_mode = st->debug_mode;
+
     for (size_t i = 0; i < min(st->capacity, st_output_size / 2); i++)
     {
         if (i < st->size)
-            printf("\t\t*[%zu] = %d\n", i + 1, st->data[i+1]);
+            printf_log_msg(debug_mode, "\t\t*[%zu] = %d\n", i + 1, st->data[i+1]);
         else
-            printf("\t\t [%zu] = [empty]\n", i + 1);
+            printf_log_msg(debug_mode, "\t\t [%zu] = [empty]\n", i + 1);
     }
 
     if (st_output_size < st->capacity)
     {
-        printf("\t\t ...\n");
+        printf_log_msg(debug_mode, "\t\t ...\n");
     }
 
     for (size_t i = max(st_output_size / 2, st->capacity - st_output_size / 2); \
                                                         i < st->capacity; i++)
     {
         if (i < st->size)
-            printf("\t\t*[%zu] = %d\n", i + 1, st->data[i+1]);
+            printf_log_msg(debug_mode, "\t\t*[%zu] = %d\n", i + 1, st->data[i+1]);
         else
-            printf("\t\t [%zu] = [empty]\n", i + 1);
+            printf_log_msg(debug_mode, "\t\t [%zu] = [empty]\n", i + 1);
     }
 }

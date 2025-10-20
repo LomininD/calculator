@@ -2,6 +2,7 @@
 #define STACK_INFO_H
 
 #include <stdio.h>
+#include "../../shared/debug.h"
 
 typedef int st_data_type; // you can change stack type here
 
@@ -30,7 +31,7 @@ enum st_return_err
 
 struct st_t
 {
-
+    md_t debug_mode;
     st_data_type* data;
     // add canary
     size_t size;

@@ -2,7 +2,7 @@
 #include "stack_dump.h"
 
 
-st_return_err st_ctor (st_t* st, size_t capacity)
+st_return_err st_ctor (st_t* st, size_t capacity, md_t debug_mode)
 {
     if (st == NULL)
     {
@@ -11,11 +11,13 @@ st_return_err st_ctor (st_t* st, size_t capacity)
         return no_stack;
     }
 
+    st->debug_mode = debug_mode;
+
     st->data = (st_data_type*) calloc (capacity + 2, sizeof(st_data_type));
 
     if (st->data == NULL)
     {
-        printf(MAKE_BOLD_RED("ERROR: ") "[from st_ctor] -> could not allocate "
+        printf_err(debug_mode, "[from st_ctor] -> could not allocate "
                                             "memory for stack data\n");
         return no_memory;
     }
@@ -60,7 +62,7 @@ st_return_err st_pop (st_t* st, st_data_type* el)
 
     if (st->size == 0)
     {
-        printf(MAKE_BOLD_RED("ERROR: ") "[from st_pop] -> pop failed, "
+        printf_err(st->debug_mode, "[from st_pop] -> pop failed, "
                                                 "no elements in stack\n");
         st_dump(st);
         return no_elements;
@@ -97,7 +99,7 @@ st_return_err st_extend(st_t* st)
 
     if (new_data == NULL)
     {
-        printf(MAKE_BOLD_RED("ERROR: ") "[from st_extend from st_push] -> "
+        printf_err(st->debug_mode, "[from st_extend from st_push] -> "
             "could not reallocate memory for stack data (got NULL pointer)\n");
             return no_memory;
     }
