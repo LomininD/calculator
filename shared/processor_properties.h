@@ -7,7 +7,7 @@
 
 // if file is updated UPDATE VERSION
 
-const int version = 10;
+const int version = 11;
 const int max_byte_code_len = 1000;
 const int register_amount = 8;
 const int accuracy = 1000;
@@ -26,6 +26,7 @@ struct proc_info
     int* code;
     size_t prg_size;
     st_t st;
+    st_t ret_st; // add to dump ctor dtor
     int registers[register_amount];
     size_t ip;
 };
@@ -51,6 +52,8 @@ enum proc_commands
     JE,
     JNE,
     DMP,
+    CALL,
+    RET,
     HLT,
 
     _cmd_count

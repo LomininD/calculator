@@ -23,7 +23,13 @@ void spu_dump(proc_info* proc) // launches only if debug mode on
 
     print_registers(proc);
 
+    printf_log_bold(debug_mode, "MAIN STACK\n", NULL);
+
     st_dump(&proc->st);
+
+    printf_log_bold(debug_mode, "RET STACK\n", NULL);
+
+    st_dump(&proc->ret_st);
 
     printf_log_msg(debug_mode, "================================================================================\n\n");
 }
@@ -66,10 +72,12 @@ void print_registers(proc_info* proc)
 
     for (int i = 0; i < register_amount; i++)
     {
-        printf_log_msg(debug_mode, "\t%cX: %d\n", (char) 'A' + i, proc->registers[i]);
+        printf_log_msg(debug_mode, "\t%cX: %d", (char) 'A' + i, proc->registers[i]);
+        if ((i + 1) % 2 == 0)
+            printf_log_msg(debug_mode, "\n");
     }
 
-    printf_log_msg(debug_mode, "--------------------------------------------------------------------------------\n\n");
+    printf_log_msg(debug_mode, "--------------------------------------------------------------------------------\n");
 }
 
 

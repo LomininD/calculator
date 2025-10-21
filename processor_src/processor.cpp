@@ -15,8 +15,15 @@ err_t proc_ctor(proc_info* proc)
 
     printf_log_msg(debug_mode, "proc_ctor: began initialising processor\n");
 
+    printf_log_msg(debug_mode, "proc_ctor: st initialisation\n");
     size_t capacity = 10;
     err_t initialised = initialise_stack(capacity, &(proc->st), debug_mode);
+    if (initialised != ok)
+        return error;
+
+    printf_log_msg(debug_mode, "proc_ctor: ret_st initialisation\n");
+    capacity = 10;
+    initialised = initialise_stack(capacity, &(proc->ret_st), debug_mode);
     if (initialised != ok)
         return error;
 
@@ -119,6 +126,14 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
 
         case DMP:
             executed = proc_dmp(proc);
+            break;
+
+        case CALL:
+            executed = proc_call(proc);
+            break;
+
+        case RET:
+            executed = proc_ret(proc);
             break;
 
         default:

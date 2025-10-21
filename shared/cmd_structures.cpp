@@ -18,4 +18,6 @@ cmd_struct possible_cmd[] = {{"PUSH", PUSH, number},
                              {"JE", JE, number},
                              {"JNE", JNE, number},
                              {"DMP", DMP, none},
+                             {"CALL", CALL, label},
+                             {"RET", RET, none},
                              {"HLT", HLT, none}};

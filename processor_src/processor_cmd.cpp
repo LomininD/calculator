@@ -274,13 +274,14 @@ err_t proc_jmp(proc_info* proc)
     printf_log_msg(debug_mode, "execute_cmd: began jmp\n");
 
     size_t new_pointer = proc->code[++proc->ip];
-    proc->ip = new_pointer;
 
     if (new_pointer >= proc->prg_size || new_pointer < 0)
     {
         printf_err(debug_mode, "[from proc_jmp] -> new IP points on a non-existed position in code\n");
         return error;
     }
+
+    proc->ip = new_pointer;
 
     printf_log_msg(debug_mode, "execute_cmd: done jmp (new_position = %zu)\n", new_pointer);
     return ok;
@@ -341,6 +342,53 @@ err_t proc_dmp(proc_info* proc)
     printf_log_msg(debug_mode, "execute_cmd: done printing dump\n");
 
     proc->ip += 1;
+    return ok;
+}
+
+
+err_t proc_call(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began call\n");
+
+    st_return_err pushed = st_push(&proc->ret_st, proc->ip + 2);
+    if (pushed != no_error)
+        return error;
+
+    err_t jumped = proc_jmp(proc);
+    if (jumped != ok)
+        return error;
+
+    printf_log_msg(debug_mode, "execute_cmd: done call\n");
+    return ok;
+}
+
+err_t proc_ret(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began ret\n");
+
+    int new_pointer = 0;
+    st_return_err popped = st_pop(&proc->ret_st, &new_pointer);
+
+    if (popped != no_error)
+        return error;
+
+    if (new_pointer >= proc->prg_size || new_pointer < 0)
+    {
+        printf_err(debug_mode, "[from proc_ret] -> new IP points on a non-existed position in code\n");
+        return error;
+    }
+
+    proc->ip = new_pointer;
+
+    printf_log_msg(debug_mode, "execute_cmd: done ret (returned to ip %d)\n", new_pointer);
     return ok;
 }
 
