@@ -15,7 +15,7 @@ void spu_dump(proc_info* proc) // launches only if debug mode on
     printf_log_msg(debug_mode, "\tregister amount = %d\n", register_amount);
     printf_log_msg(debug_mode, "\tbyte_code_file [%p]\n\n", proc->byte_code_file);
     printf_log_msg(debug_mode, "\tdebug_mode = %d\n", debug_mode);
-    printf_log_msg(debug_mode, "\tfloat_mode = ?\n\n");
+    printf_log_msg(debug_mode, "\tfloat_mode = %d\n\n", proc->proc_modes.float_mode);
     printf_log_msg(debug_mode, "\tcurrent ip = %zu\n", proc->ip);
     printf_log_msg(debug_mode, "}\n\n");
 
@@ -72,9 +72,7 @@ void print_registers(proc_info* proc)
 
     for (int i = 0; i < register_amount; i++)
     {
-        printf_log_msg(debug_mode, "\t%cX: %d", (char) 'A' + i, proc->registers[i]);
-        if ((i + 1) % 2 == 0)
-            printf_log_msg(debug_mode, "\n");
+        printf_log_msg(debug_mode, "\t%cX: %d\n", (char) 'A' + i, proc->registers[i]);
     }
 
     printf_log_msg(debug_mode, "--------------------------------------------------------------------------------\n");
