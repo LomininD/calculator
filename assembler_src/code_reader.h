@@ -12,6 +12,7 @@
 err_t read_arg(char* file_name, assembler_info* asm_data, int current_line, arg_t arg_type);
 err_t read_number_arg(char* file_name, assembler_info* asm_data, int current_line);
 err_t read_string_arg(char* file_name, assembler_info* asm_data, int current_line);
+err_t read_index(char* file_name, assembler_info* asm_data, int current_line);
 err_t read_label(char* file_name, assembler_info* asm_data, int current_line);
 err_t replace_label(char* file_name, assembler_info* asm_data, int current_line);
 int decode_reg_name(char* arg);

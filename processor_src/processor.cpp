@@ -15,16 +15,12 @@ err_t proc_ctor(proc_info* proc)
 
     printf_log_msg(debug_mode, "proc_ctor: began initialising processor\n");
 
-    printf_log_msg(debug_mode, "proc_ctor: st initialisation\n");
-    size_t capacity = 10;
-    err_t initialised = initialise_stack(capacity, &(proc->st), debug_mode);
-    if (initialised != ok)
-        return error;
+    size_t st_capacity = 10;
+    size_t ret_st_capacity = 10;
+    err_t st_initialised = initialise_stack(st_capacity, &(proc->st), debug_mode);
+    err_t ret_st_initialised = initialise_stack(ret_st_capacity, &(proc->ret_st), debug_mode);
 
-    printf_log_msg(debug_mode, "proc_ctor: ret_st initialisation\n");
-    capacity = 10;
-    initialised = initialise_stack(capacity, &(proc->ret_st), debug_mode);
-    if (initialised != ok)
+    if (st_initialised != ok || ret_st_initialised != ok)
         return error;
 
     proc->ip = 0;
@@ -97,6 +93,12 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
         case POPREG:
             executed = proc_popreg(proc);
             break;
+        case PUSHM:
+            executed = proc_pushm(proc);
+            break;
+        case POPM:
+            executed = proc_popm(proc);
+            break;
         case ADD:
         case SUB:
         case MULT:
@@ -144,25 +146,6 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
 }
 
 
-/*
-err_t check_ip(proc_info* proc)
-{
-    assert(proc != NULL);
-
-    if (proc->ip >= proc->prg_size)
-    {
-        printf("check_ip: " MAKE_BOLD_RED("ERROR:") " ip value (%zu) is bigger than byte code size (%zu)\n", proc->ip, proc->prg_size);
-        return error;
-    }
-    else
-    {
-        printf("check_ip: ip value (%zu) is ok\n", proc->ip);
-        return ok;
-    }
-}
-*/
-
-
 err_t proc_dtor(proc_info* proc)
 {
     assert(proc != NULL);
@@ -173,11 +156,18 @@ err_t proc_dtor(proc_info* proc)
 
     md_t debug_mode = proc->proc_modes.debug_mode;
 
+    if (debug_mode == on)
+    {
+        spu_dump(proc);
+        memory_dump(proc);
+    }
+
     printf_log_msg(debug_mode, "proc_dtor: began termination\n");
 
-    st_return_err terminated = st_dtor(&proc->st);
+    st_return_err terminated_st = st_dtor(&proc->st);
+    st_return_err terminated_ret_st = st_dtor(&proc->ret_st);
 
-    if (terminated == no_error)
+    if (terminated_st == no_error && terminated_ret_st == no_error)
     {
         printf_log_msg(debug_mode, "proc_dtor: stack destroyed\n");
     }

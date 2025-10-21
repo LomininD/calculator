@@ -54,6 +54,9 @@ err_t read_arg(char* file_name, assembler_info* asm_data, int current_line, arg_
         case string:
             is_read = read_string_arg(file_name, asm_data, current_line);
             return is_read;
+        case ind:
+            is_read = read_index(file_name, asm_data, current_line);
+            return is_read;
         case label:
             is_read = replace_label(file_name, asm_data, current_line);
             return is_read;
@@ -131,6 +134,43 @@ err_t read_string_arg(char* file_name, assembler_info* asm_data, int current_lin
         printf_err(debug_mode, "[%s:%d] -> read_string_arg: failed to get register name\n", file_name, current_line);
         return error;
     }
+}
+
+
+err_t read_index(char* file_name, assembler_info* asm_data, int current_line)
+{
+    assert(file_name != NULL);
+    assert(asm_data != NULL);
+
+    md_t debug_mode = asm_data->debug_mode;
+
+    int number = 0;
+    char arg[3] = {};
+    char raw_arg[5] = {};
+    char bad_symb = 0;
+
+    int success = sscanf(asm_data->str, "%*s %4s %c", raw_arg, &bad_symb);
+
+    if (success == 1)
+    {
+        if (raw_arg[0] == '[' && raw_arg[3] == ']')
+        {
+            sscanf(raw_arg, "[%2s]", arg);
+
+            printf_log_msg(debug_mode, "read_index: recognised register name %s\n", arg);
+
+            number = decode_reg_name(arg);
+            printf_log_msg(debug_mode, "read_index: got register index: %d\n", number);
+
+            asm_data->code[asm_data->pos + preamble_size] = number;
+            printf_log_msg(debug_mode, "read_index: code[%zu] = %d\n", asm_data->pos + preamble_size, number);
+            asm_data->pos++;
+            return ok;
+        }
+    }
+
+    printf_err(debug_mode, "[%s:%d] -> read_string_arg: failed to get register name\n", file_name, current_line);
+    return error;
 }
 
 

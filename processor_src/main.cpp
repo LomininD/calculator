@@ -2,8 +2,6 @@
 #include "processor.h"
 #include "processor_init.h"
 
-// TODO: *1000 to work with floats (add mode -f)
-
 int main(int argc, char* argv[])
 {
     proc_info spu = {};
@@ -30,7 +28,10 @@ int main(int argc, char* argv[])
         END_PROCESS(debug_mode);
 
     if (debug_mode == on)
+    {
         spu_dump(proc);
+        memory_dump(proc);
+    }
 
     proc_commands current_cmd = UNKNOWN;
 
@@ -55,8 +56,6 @@ int main(int argc, char* argv[])
         if (debug_mode == on)
             getchar();
     }
-
-    spu_dump(proc);
 
     proc_dtor(proc);
     printf_log_msg(debug_mode, "main: shutting down processor\n");

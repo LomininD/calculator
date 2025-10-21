@@ -93,6 +93,89 @@ err_t proc_pushreg(proc_info* proc)
 }
 
 
+err_t proc_popm(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began popm\n");
+
+    int reg = proc->code[++proc->ip];
+
+    if (reg < 0 || reg >= register_amount)
+    {
+        printf_err(debug_mode, "[from execute_cmd] -> popm failed (got non-existent register index %d)\n", reg);
+        return error;
+    }
+
+    int ind = proc->registers[reg];
+
+    if (ind < 0 || ind >= ram_size)
+    {
+        printf_err(debug_mode, "[from execute_cmd] -> popm failed (got non-existent ram index %d)\n", ind);
+        return error;
+    }
+
+    int el = 0;
+    st_return_err popped = st_pop(&proc->st, &el);
+
+    if (popped != no_error)
+    {
+        printf_err(debug_mode, "[from execute_cmd] -> popm failed (not enough data in stack)\n");
+        return error;
+    }
+
+    proc->RAM[ind] = el;
+
+    printf_log_msg(debug_mode, "execute_cmd: popm succeeded\n");
+    st_dump(&proc->st);
+    proc->ip++;
+
+    return ok;
+}
+
+
+err_t proc_pushm(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began pushm\n");
+
+    int reg = proc->code[++proc->ip];
+
+    if (reg < 0 || reg >= register_amount)
+    {
+        printf_err(debug_mode, "[from execute_cmd] -> pushm failed (got non-existent register index %d)\n", reg);
+        return error;
+    }
+
+    int ind = proc->registers[reg];
+
+    if (ind < 0 || ind >= ram_size)
+    {
+        printf_err(debug_mode, "[from execute_cmd] -> pushm failed (got non-existent ram index %d)\n", ind);
+        return error;
+    }
+
+    st_return_err pushed = st_push(&proc->st, proc->RAM[ind]);
+
+    if (pushed != no_error)
+    {
+        printf_err(debug_mode, "[from execute_cmd] -> pushm failed (could not push data to stack)\n");
+        return error;
+    }
+
+    printf_log_msg(debug_mode, "execute_cmd: pushm succeeded\n");
+    st_dump(&proc->st);
+    proc->ip++;
+
+    return ok;
+}
+
+
 err_t proc_calc(proc_info* proc, proc_commands cmd)
 {
     assert(proc != NULL);

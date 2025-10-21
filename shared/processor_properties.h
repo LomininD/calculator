@@ -7,8 +7,9 @@
 
 // if file is updated UPDATE VERSION
 
-const int version = 11;
+const int version = 13;
 const int max_byte_code_len = 1000;
+const size_t ram_size = 100;
 const int register_amount = 8;
 const int accuracy = 1000;
 
@@ -21,13 +22,14 @@ struct proc_modes_type
 
 struct proc_info
 {
-    proc_modes_type proc_modes; // ?
-    FILE* byte_code_file; // ?
+    proc_modes_type proc_modes;
+    FILE* byte_code_file;
     int* code;
     size_t prg_size;
     st_t st;
-    st_t ret_st; // add to dump ctor dtor
+    st_t ret_st;
     int registers[register_amount];
+    int RAM[ram_size]; // add to dump
     size_t ip;
 };
 
@@ -37,6 +39,8 @@ enum proc_commands
     PUSH,
     PUSHREG,
     POPREG,
+    PUSHM,
+    POPM,
     ADD,
     SUB,
     DIV,
@@ -71,6 +75,7 @@ enum arg_t
     none,
     number,
     string,
+    ind,
     label
 };
 

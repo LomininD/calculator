@@ -2,6 +2,32 @@
 #include "stdlib.h"
 
 
+void memory_dump(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "====================================RAM DUMP====================================\n");
+
+    printf_log_bold(debug_mode, " RAM", NULL);
+    printf_log_msg(debug_mode, "  [%p]\n\n", proc->RAM);
+
+    for (int i = 0; i < ram_size; ++i)
+    {
+        put_number(proc->RAM[i], debug_mode, false);
+
+        if ((i + 1) % dump_width == 0)
+            printf_log_msg(debug_mode, "\n");
+    }
+
+    if (ram_size % 10 != 0)
+        printf_log_msg(debug_mode, "\n");
+
+    printf_log_msg(debug_mode, "================================================================================\n\n");
+}
+
+
 void spu_dump(proc_info* proc) // launches only if debug mode on
 {
     assert(proc != NULL);
@@ -51,7 +77,7 @@ void print_code(proc_info* proc)
         else
             put_number(proc->code[i], debug_mode, false);
 
-        if ((i + 1) % code_width == 0)
+        if ((i + 1) % dump_width == 0)
             printf_log_msg(debug_mode, "\n");
     }
 

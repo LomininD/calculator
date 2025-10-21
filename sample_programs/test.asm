@@ -1,17 +1,7 @@
-JMP :0
-
-:1
 PUSH 1
-OUT
-DMP
-RET
-
-:0
-CALL :1
-
-PUSH 2
+POPREG AX
+PUSH 25
+POPM [AX]
+PUSHM [AX]
 OUT
 HLT
-
-
-

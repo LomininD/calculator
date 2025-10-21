@@ -8,6 +8,8 @@
 err_t proc_push(proc_info* proc);
 err_t proc_pushreg(proc_info* proc);
 err_t proc_popreg(proc_info* proc);
+err_t proc_pushm(proc_info* proc);
+err_t proc_popm(proc_info* proc);
 err_t proc_calc(proc_info* proc, proc_commands cmd);
 err_t proc_in(proc_info* proc);
 err_t get_number(int* number, md_t debug_mode);
