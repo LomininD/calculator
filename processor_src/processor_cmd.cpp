@@ -131,6 +131,8 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
 
         case MULT:
             res = a * b;
+            if (proc->proc_modes.float_mode == on)
+                res = res / 1000;
             break;
 
         case DIV:
@@ -139,6 +141,9 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
                 printf_err(debug_mode, "[from execute_cmd] -> div failed - division by zero\n");
                 return error;
             }
+
+            if (proc->proc_modes.float_mode == on)
+                b = b * accuracy;
 
             res = b / a;
             break;
@@ -150,7 +155,10 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
                 return error;
             }
 
-            res = sqrt(a);
+            if (proc->proc_modes.float_mode == on)
+                res = (int) (sqrt((double) a / (double) accuracy) * accuracy);
+            else
+                res = sqrt(a);
             break;
     }
 

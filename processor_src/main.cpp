@@ -3,7 +3,6 @@
 #include "processor_init.h"
 
 // TODO: *1000 to work with floats (add mode -f)
-// TODO: calloc
 
 int main(int argc, char* argv[])
 {

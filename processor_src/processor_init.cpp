@@ -8,6 +8,9 @@ err_t parse_args(int argc, char* argv[], proc_info* proc)
 
     bool got_byte_code_file = false;
 
+    proc->proc_modes.debug_mode = off;
+    proc->proc_modes.float_mode = off;
+
     for (int i = 1; i < argc; ++i)
     {
         if (argv[i][0] == '-')
@@ -62,6 +65,10 @@ err_t parse_flags(char flag_str[], proc_info* proc)
             launch_help();
             return help;
         }
+        else if (flag_str[ind] == 'f')
+        {
+            proc->proc_modes.float_mode = on;;
+        }
         else
         {
             printf(MAKE_BOLD_RED("ERROR:") " wrong flag(s)\n");
@@ -101,6 +108,7 @@ void launch_help(void)
     printf("Byte code file name is required for processor.\n\n");
     printf("Possible flags:\n");
     printf("-d: debug mode (log stored in spu_log.log)\n");
+    printf("-f: float mode (all input numbers should be multiplied by 1000)\n");
     printf("-h: prints help information\n");
 }
 

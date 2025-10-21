@@ -7,14 +7,15 @@
 
 // if file is updated UPDATE VERSION
 
-const int version = 9;
+const int version = 10;
 const int max_byte_code_len = 1000;
 const int register_amount = 8;
-
+const int accuracy = 1000;
 
 struct proc_modes_type
 {
     md_t debug_mode;
+    md_t float_mode;
 };
 
 
