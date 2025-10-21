@@ -15,7 +15,10 @@ void memory_dump(proc_info* proc)
 
     for (int i = 0; i < ram_size; ++i)
     {
-        put_number(proc->RAM[i], debug_mode, false);
+        if (proc->RAM[i] == 0)
+            put_number(proc->RAM[i], debug_mode, false);
+        else
+            put_number(proc->RAM[i], debug_mode, true);
 
         if ((i + 1) % dump_width == 0)
             printf_log_msg(debug_mode, "\n");
@@ -105,7 +108,7 @@ void print_registers(proc_info* proc)
 }
 
 
-void put_number(int number, md_t debug_mode, bool is_current_cmd)
+void put_number(int number, md_t debug_mode, bool highlight)
 {
     char str[max_number_size + 1] = {};
 	for (int i = 0; i < max_number_size ; i++)
@@ -125,7 +128,7 @@ void put_number(int number, md_t debug_mode, bool is_current_cmd)
         number /= 10;
     }
 
-    if (is_current_cmd)
+    if (highlight)
         printf_log_bold(debug_mode, ">%s<", str);
     else
         printf_log_grey(debug_mode, " %s ", str);

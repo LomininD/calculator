@@ -429,6 +429,23 @@ err_t proc_dmp(proc_info* proc)
 }
 
 
+err_t proc_dmpm(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began printing memory dump\n");
+
+    memory_dump(proc);
+
+    printf_log_msg(debug_mode, "execute_cmd: done printing memory dump\n");
+
+    proc->ip += 1;
+    return ok;
+}
+
+
 err_t proc_call(proc_info* proc)
 {
     assert(proc != NULL);

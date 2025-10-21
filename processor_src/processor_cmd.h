@@ -17,6 +17,7 @@ err_t proc_out(proc_info* proc);
 err_t proc_jmp(proc_info* proc);
 err_t proc_cond_jmp(proc_info* proc, proc_commands cmd);
 err_t proc_dmp(proc_info* proc);
+err_t proc_dmpm(proc_info* proc);
 err_t proc_call(proc_info* proc);
 err_t proc_ret(proc_info* proc);
 bool check_condition(proc_commands cmd, int a, int b);

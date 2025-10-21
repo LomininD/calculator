@@ -130,6 +130,10 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
             executed = proc_dmp(proc);
             break;
 
+        case DMPM:
+            executed = proc_dmpm(proc);
+            break;
+
         case CALL:
             executed = proc_call(proc);
             break;
