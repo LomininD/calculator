@@ -37,7 +37,7 @@ struct debug_info
 {
     int current_line;
     bool got_hlt;
-    bool got_out;
+    bool got_output;
     bool not_empty;
 };
 

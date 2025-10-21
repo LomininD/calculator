@@ -493,6 +493,30 @@ err_t proc_ret(proc_info* proc)
 }
 
 
+err_t proc_draw(proc_info* proc)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    printf_log_msg(debug_mode, "execute_cmd: began draw\n");
+
+    int* ram = proc->RAM;
+
+    for (int i = 0; i < ram_size; i++)
+    {
+        printf("%c ", ram[i]);
+        if ((i + 1) % width == 0)
+            printf("\n");
+    }
+
+    printf_log_msg(debug_mode, "execute_cmd: done draw\n");
+
+    proc->ip += 1;
+    return ok;
+}
+
+
 bool check_condition(proc_commands cmd, int a, int b)
 {
     switch(cmd)

@@ -142,6 +142,10 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
             executed = proc_ret(proc);
             break;
 
+        case DRAW:
+            executed = proc_draw(proc);
+            break;
+
         default:
             printf_err(proc->proc_modes.debug_mode, "[from execute_cmd] -> unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, proc->ip);
     }

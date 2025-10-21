@@ -13,5 +13,5 @@ OBJ = main.o processor.o processor_init.o processor_dump.o processor_cmd.o stack
 	$(CC) -o $@ $^ $(FLAGS)
 
 clean:
-	rm -rf *.o ../processor stack/*.o
+	rm -rf *.o ../processor stack/*.o ../shared/*.o
 

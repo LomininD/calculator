@@ -7,9 +7,11 @@
 
 // if file is updated UPDATE VERSION
 
-const int version = 14;
+const int version = 15;
 const int max_byte_code_len = 1000;
-const size_t ram_size = 100;
+const int width = 127;
+const int height = 78;
+const size_t ram_size = width * height;
 const int register_amount = 8;
 const int accuracy = 1000;
 
@@ -59,6 +61,7 @@ enum proc_commands
     DMPM,
     CALL,
     RET,
+    DRAW,
     HLT,
 
     _cmd_count

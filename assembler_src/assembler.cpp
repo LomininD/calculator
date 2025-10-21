@@ -25,7 +25,7 @@ err_t asm_ctor(assembler_info* asm_data, debug_info* debug)
 
     debug->current_line = 0;
     debug->got_hlt = false;
-    debug->got_out = false;
+    debug->got_output = false;
     debug->not_empty = false;
 
     printf_log_msg(debug_mode, "asm_ctor: finished initialising\n");

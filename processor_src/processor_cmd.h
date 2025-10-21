@@ -20,6 +20,7 @@ err_t proc_dmp(proc_info* proc);
 err_t proc_dmpm(proc_info* proc);
 err_t proc_call(proc_info* proc);
 err_t proc_ret(proc_info* proc);
+err_t proc_draw(proc_info* proc);
 bool check_condition(proc_commands cmd, int a, int b);
 const char* decode_cmd (proc_commands cmd);
 

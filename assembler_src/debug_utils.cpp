@@ -11,8 +11,8 @@ void code_check(debug_info* debug, proc_commands cmd)
     if (cmd == HLT)
         debug->got_hlt = true;
 
-    if (cmd == OUT)
-        debug->got_out = true;
+    if (cmd == OUT || cmd == DRAW)
+        debug->got_output = true;
 
 }
 
@@ -35,7 +35,7 @@ void check_warnings(debug_info* debug, char* input_file_name, md_t debug_mode)
 
     if (debug->not_empty)
     {
-        if (!debug->got_out)
+        if (!debug->got_output)
         {
             printf_warn(debug_mode, "[%s:%d:] -> assembler: calculations seem to have no effect\n", input_file_name, debug->current_line);
             printf_note(debug_mode, "Note: you may forgot OUT instruction in your code\n", NULL);

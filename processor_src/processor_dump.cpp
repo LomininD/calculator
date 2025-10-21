@@ -15,10 +15,7 @@ void memory_dump(proc_info* proc)
 
     for (int i = 0; i < ram_size; ++i)
     {
-        if (proc->RAM[i] == 0)
-            put_number(proc->RAM[i], debug_mode, false);
-        else
-            put_number(proc->RAM[i], debug_mode, true);
+        put_number(proc->RAM[i], debug_mode, false);
 
         if ((i + 1) % dump_width == 0)
             printf_log_msg(debug_mode, "\n");
