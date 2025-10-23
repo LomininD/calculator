@@ -103,8 +103,10 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
         case SUB:
         case MULT:
         case DIV:
+            executed = proc_calc_binary(proc, cmd);
+            break;
         case SQRT:
-            executed = proc_calc(proc, cmd);
+            executed = proc_calc_unary(proc, cmd);
             break;
         case IN:
             executed = proc_in(proc);
@@ -112,11 +114,9 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
         case OUT:
             executed = proc_out(proc);
             break;
-
         case JMP:
             executed = proc_jmp(proc);
             break;
-
         case JB:
         case JBE:
         case JA:
@@ -125,27 +125,21 @@ err_t execute_cmd(proc_info* proc, proc_commands cmd)
         case JNE:
             executed = proc_cond_jmp(proc, cmd);
             break;
-
         case DMP:
             executed = proc_dmp(proc);
             break;
-
         case DMPM:
             executed = proc_dmpm(proc);
             break;
-
         case CALL:
             executed = proc_call(proc);
             break;
-
         case RET:
             executed = proc_ret(proc);
             break;
-
         case DRAW:
             executed = proc_draw(proc);
             break;
-
         default:
             printf_err(proc->proc_modes.debug_mode, "[from execute_cmd] -> unknown command (cmd = %d, ip = %zu), cannot execute\n", cmd, proc->ip);
     }

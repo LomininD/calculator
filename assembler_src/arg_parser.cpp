@@ -36,7 +36,7 @@ err_t parse_args(int argc, char* argv[], files_info* files, assembler_info* asm_
         return error;
 }
 
-err_t parse_flags(char flag_str[], assembler_info* asm_data, parser_struct* verification)
+err_t parse_flags(const char flag_str[], assembler_info* asm_data, parser_struct* verification)
 {
     assert(asm_data != NULL);
     assert(verification != NULL);
@@ -73,19 +73,19 @@ err_t parse_flags(char flag_str[], assembler_info* asm_data, parser_struct* veri
 }
 
 
-err_t parse_file_name(files_info* files, char* files_str, parser_struct* verification)
+err_t parse_file_name(files_info* files, const char* files_str, parser_struct* verification)
 {
     assert(files != NULL);
     assert(verification != NULL);
 
     if (!verification->input_file_determined)
     {
-        files->input_file_name = files_str;
+        files->input_file_name = (char *) files_str;
         verification->input_file_determined = true;
     }
     else if (verification->got_o_flag)
     {
-        files->output_file_name = files_str;
+        files->output_file_name = (char*) files_str;
         verification->output_file_determined = true;
     }
     else
@@ -98,7 +98,7 @@ err_t parse_file_name(files_info* files, char* files_str, parser_struct* verific
 }
 
 
-char* generate_output_name(char* input_file_name)
+char* generate_output_name(const char* input_file_name)
 {
     assert(input_file_name != NULL);
 
@@ -138,7 +138,7 @@ void launch_help(void)
     printf("If output file is undefined, the file with same name but .out extention will be created.\n");
 }
 
-err_t verify_file_names(files_info* files, parser_struct* verification)
+err_t verify_file_names(const files_info* files, const parser_struct* verification)
 {
     assert(files != NULL);
     assert(verification != NULL);
@@ -152,7 +152,7 @@ err_t verify_file_names(files_info* files, parser_struct* verification)
     return ok;
 }
 
-err_t open_files(files_info* files, parser_struct* verification, assembler_info* asm_data)
+err_t open_files(files_info* files, const parser_struct* verification, assembler_info* asm_data)
 {
     assert(files != NULL);
     assert(asm_data != NULL);
@@ -187,8 +187,6 @@ err_t open_files(files_info* files, parser_struct* verification, assembler_info*
         printf(MAKE_GREY("Note: file name may be incorrect\n"));
         return error;
     }
-
-
 
     return ok;
 }

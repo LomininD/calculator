@@ -1,15 +1,15 @@
 ; AX = x
 ; BX = y
-; CX = conter
+; CX = counter
 ; DX = r
 ; EX = dx
 ; FX = dy
 ; GX - SCREEN WIDTH
 ; HX - SCREEN HIGHT
 
-PUSH 127
+PUSH 20
 POPREG GX       ; screen width
-PUSH 78
+PUSH 20
 POPREG HX       ; screen height
 
 IN
@@ -36,7 +36,7 @@ MULT
 SUB
 POPREG AX       ; gets x
 
-PUSHREG AX
+PUSHREG AX      ; (x - dx)^2
 PUSHREG EX
 SUB
 POPREG AX
@@ -47,7 +47,7 @@ MULT
 POPREG AX
 
 
-PUSHREG BX
+PUSHREG BX      ; (y - dy)^2
 PUSHREG FX
 SUB
 POPREG BX
@@ -78,13 +78,10 @@ POPM [CX]
 
 :3
 
-DMPM
-
 PUSHREG CX      ; increment counter
 PUSH 1
 ADD
 POPREG CX
-
 
 PUSHREG GX
 PUSHREG HX
@@ -92,7 +89,6 @@ MULT
 PUSHREG CX
 JA :1
 
-DMPM
-
 DRAW
 HLT
+

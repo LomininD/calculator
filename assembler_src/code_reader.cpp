@@ -37,7 +37,7 @@ void readline(assembler_info* asm_data, FILE* fp)
 }
 
 
-err_t read_arg(char* file_name, assembler_info* asm_data, int current_line, arg_t arg_type)
+err_t read_arg(const char* file_name, assembler_info* asm_data, int current_line, arg_t arg_type)
 {
     assert(file_name != NULL);
     assert(asm_data != NULL);
@@ -67,7 +67,7 @@ err_t read_arg(char* file_name, assembler_info* asm_data, int current_line, arg_
 }
 
 
-err_t read_number_arg(char* file_name, assembler_info* asm_data, int current_line)
+err_t read_number_arg(const char* file_name, assembler_info* asm_data, int current_line)
 {
     assert(file_name != NULL);
     assert(asm_data != NULL);
@@ -104,7 +104,7 @@ err_t read_number_arg(char* file_name, assembler_info* asm_data, int current_lin
 }
 
 
-err_t read_string_arg(char* file_name, assembler_info* asm_data, int current_line)
+err_t read_string_arg(const char* file_name, assembler_info* asm_data, int current_line)
 {
     assert(file_name != NULL);
     assert(asm_data != NULL);
@@ -137,7 +137,7 @@ err_t read_string_arg(char* file_name, assembler_info* asm_data, int current_lin
 }
 
 
-err_t read_index(char* file_name, assembler_info* asm_data, int current_line)
+err_t read_index(const char* file_name, assembler_info* asm_data, int current_line)
 {
     assert(file_name != NULL);
     assert(asm_data != NULL);
@@ -174,7 +174,7 @@ err_t read_index(char* file_name, assembler_info* asm_data, int current_line)
 }
 
 
-err_t read_label(char* file_name, assembler_info* asm_data, int current_line)
+err_t read_label(const char* file_name, assembler_info* asm_data, int current_line)
 {
     assert(file_name != NULL);
     assert(asm_data != NULL);
@@ -208,7 +208,7 @@ err_t read_label(char* file_name, assembler_info* asm_data, int current_line)
 }
 
 
-err_t replace_label(char* file_name, assembler_info* asm_data, int current_line)
+err_t replace_label(const char* file_name, assembler_info* asm_data, int current_line)
 {
     assert(file_name != NULL);
     assert(asm_data != NULL);
@@ -246,7 +246,7 @@ err_t replace_label(char* file_name, assembler_info* asm_data, int current_line)
 }
 
 
-int decode_reg_name(char* arg)
+int decode_reg_name(const char* arg)
 {
     assert(arg != NULL);
 

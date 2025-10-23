@@ -18,9 +18,9 @@ extern cmd_struct possible_cmd[];
 
 err_t asm_ctor(assembler_info* asm_data, debug_info* debug);
 err_t fill_file_preamble(assembler_info* asm_data);
-err_t process_code(files_info* files, assembler_info* asm_data, debug_info* debug);
+err_t process_code(const files_info* files, assembler_info* asm_data, debug_info* debug);
 void reset_data(assembler_info* asm_data, int* current_line, FILE* input_file);
-err_t determine_cmd(char* file_name, assembler_info* asm_data, int current_line);
+err_t determine_cmd(const char* file_name, assembler_info* asm_data, int current_line);
 err_t asm_dtor(files_info* files, assembler_info* asm_data);
 
 

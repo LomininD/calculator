@@ -8,9 +8,9 @@
 // if file is updated UPDATE VERSION
 
 const int version = 15;
-const int max_byte_code_len = 1000;
-const int width = 127;
-const int height = 78;
+const int max_byte_code_len = 10000000;
+const int width = 400; // 127
+const int height = 250; // 78
 const size_t ram_size = width * height;
 const int register_amount = 8;
 const int accuracy = 1000;
@@ -31,7 +31,7 @@ struct proc_info
     st_t st;
     st_t ret_st;
     int registers[register_amount];
-    int RAM[ram_size]; // add to dump
+    int RAM[ram_size];
     size_t ip;
 };
 

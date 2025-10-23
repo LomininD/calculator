@@ -176,7 +176,7 @@ err_t proc_pushm(proc_info* proc)
 }
 
 
-err_t proc_calc(proc_info* proc, proc_commands cmd)
+err_t proc_calc_binary(proc_info* proc, proc_commands cmd)
 {
     assert(proc != NULL);
 
@@ -187,18 +187,8 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
 
     int a = 0;
     int b = 0;
-    st_return_err got_a = no_error;
-    st_return_err got_b = no_error;
-
-    if (cmd != SQRT)
-    {
-        got_a = st_pop(&proc->st, &a);
-        got_b = st_pop(&proc->st, &b);
-    }
-    else
-    {
-        got_a = st_pop(&proc->st, &a);
-    }
+    st_return_err got_a = st_pop(&proc->st, &a);
+    st_return_err got_b = st_pop(&proc->st, &b);
 
     int res = 0;
 
@@ -230,7 +220,45 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
 
             res = b / a;
             break;
+    }
 
+    if (got_a == no_error && got_b == no_error)
+    {
+        st_return_err pushed = st_push(&proc->st, res);
+
+        if (pushed != no_error)
+        {
+            printf_err(debug_mode, "[from execute_cmd] -> %s failed (failed to push the result)\n", cmd_name);
+            return error;
+        }
+
+        st_dump(&proc->st);
+        printf_log_msg(debug_mode, "execute_cmd: %s succeeded, result = %d\n", cmd_name, res);
+        proc->ip++;
+        return ok;
+    }
+
+    printf_err(debug_mode, "[from execute_cmd] -> %s failed (not enough data in stack)\n", cmd_name);
+    return error;
+}
+
+
+err_t proc_calc_unary(proc_info* proc, proc_commands cmd)
+{
+    assert(proc != NULL);
+
+    md_t debug_mode = proc->proc_modes.debug_mode;
+
+    const char* cmd_name = decode_cmd(cmd);
+    printf_log_msg(debug_mode, "execute_cmd: began %s \n", cmd_name);
+
+    int a = 0;
+    st_return_err got_a = st_pop(&proc->st, &a);
+
+    int res = 0;
+
+    switch(cmd)
+    {
         case SQRT:
             if (a < 0)
             {
@@ -244,8 +272,7 @@ err_t proc_calc(proc_info* proc, proc_commands cmd)
                 res = sqrt(a);
             break;
     }
-
-    if (got_a == no_error && got_b == no_error)
+    if (got_a == no_error)
     {
         st_return_err pushed = st_push(&proc->st, res);
 
@@ -505,7 +532,7 @@ err_t proc_draw(proc_info* proc)
 
     for (int i = 0; i < ram_size; i++)
     {
-        printf("%c ", ram[i]);
+        printf("%c", ram[i]);
         if ((i + 1) % width == 0)
             printf("\n");
     }

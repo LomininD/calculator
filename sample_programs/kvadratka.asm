@@ -38,7 +38,7 @@ PUSHREG DX      ; D <= 0
 PUSH 0
 JE :4           ; if D == 0
 
-PUSH -1         ; D < 0
+PUSH 0          ; D < 0
 OUT             ; no roots
 HLT
 
@@ -53,6 +53,8 @@ PUSHREG CX
 PUSHREG BX
 DIV
 MULT
+PUSH 1
+OUT
 OUT             ; x = -c/b
 HLT
 
@@ -62,7 +64,7 @@ PUSHREG CX      ; if c == 0
 PUSH 0
 JE :2
 
-PUSH -1         ; c != 0
+PUSH 0         ; c != 0
 OUT             ; no roots
 HLT
 
@@ -96,7 +98,9 @@ PUSHREG AX
 PUSH 2
 MULT
 DIV
+PUSH 2
 
+OUT
 OUT
 OUT
 HLT
@@ -111,5 +115,7 @@ PUSH 2
 PUSHREG AX
 MULT
 DIV
+PUSH 1
+OUT
 OUT
 HLT
